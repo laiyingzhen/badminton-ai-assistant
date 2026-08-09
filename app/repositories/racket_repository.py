@@ -1,7 +1,15 @@
-from sqlalchemy import select
+import logging
+
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
+from app.exceptions.recommendation import (
+    DatabaseServiceError,
+)
 from app.models.racket import Racket
+
+
+logger = logging.getLogger(__name__)
 
 
 class RacketRepository:
@@ -9,20 +17,41 @@ class RacketRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def find_by_budget(
+    def find_similar(
         self,
-        budget: int,
-    ) -> list[Racket]:
+        query_embedding: list[float],
+        budget: float,
+        limit: int,
+    ):
 
-        statement = (
-            select(Racket)
-            .where(
-                Racket.price <= budget,
-                Racket.is_active.is_(True),
+        try:
+
+            distance = Racket.embedding.cosine_distance(
+                query_embedding
             )
-            .order_by(Racket.price.desc())
-        )
 
-        return list(
-            self.db.scalars(statement).all()
-        )
+            return (
+                self.db.query(
+                    Racket,
+                    distance.label("distance"),
+                )
+                .filter(
+                    Racket.price <= budget
+                )
+                .order_by(
+                    distance
+                )
+                .limit(limit)
+                .all()
+            )
+
+        except SQLAlchemyError as exc:
+
+            logger.exception(
+                "Database query failed while searching similar rackets."
+            )
+
+            raise DatabaseServiceError(
+                "Unable to search racket database."
+            ) from exc
+

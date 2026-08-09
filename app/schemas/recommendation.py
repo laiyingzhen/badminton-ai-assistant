@@ -1,52 +1,65 @@
-from enum import Enum
+from decimal import Decimal
 
 from pydantic import BaseModel, Field
 
 
-class PlayerLevel(str, Enum):
-    BEGINNER = "beginner"
-    INTERMEDIATE = "intermediate"
-    ADVANCED = "advanced"
-
-
-class PlayingStyle(str, Enum):
-    OFFENSIVE = "offensive"
-    DEFENSIVE = "defensive"
-    ALL_ROUND = "all_round"
-
-
 class RacketRecommendationRequest(BaseModel):
-    level: PlayerLevel = Field(
-        ...,
-        description="使用者程度"
+    level: str = Field(
+        description="使用者羽球程度，例如 beginner / intermediate / advanced"
     )
 
-    playing_style: PlayingStyle = Field(
-        ...,
-        description="使用者打法"
+    playing_style: str = Field(
+        description="使用者打法，例如 offensive / defensive / all_round"
     )
 
-    budget: int = Field(
-        ...,
+    budget: Decimal = Field(
         gt=0,
-        description="預算，單位：新台幣"
+        description="預算，單位為新台幣"
     )
 
 
-class RacketRecommendation(BaseModel):
-    name: str = Field(
-        ...,
-        description="羽球拍名稱"
+class RacketCandidate(BaseModel):
+    id: int
+    brand: str
+    model: str
+    price: Decimal
+    distance: float
+    similarity: float
+
+    def to_prompt_dict(self) -> dict:
+        return {
+            "brand": self.brand,
+            "model": self.model,
+            "price": float(self.price),
+            "similarity": round(
+                self.similarity,
+                4,
+            ),
+        }
+
+
+class RacketFinalRecommendation(BaseModel):
+    recommended_racket_id: int = Field(
+        description=(
+            "The ID of the recommended racket. "
+            "Must be one of the candidate racket IDs."
+        )
     )
 
     reason: str = Field(
-        ...,
-        description="推薦這把球拍的原因"
+        description="Reason why this racket is the best choice for the user."
     )
 
 
 class RacketRecommendationResponse(BaseModel):
-    recommendations: list[RacketRecommendation] = Field(
-        ...,
-        description="推薦的羽球拍清單"
+    racket: RacketCandidate = Field(
+        description="AI 最終推薦的球拍"
     )
+
+    reason: str = Field(
+        description="AI 推薦理由"
+    )
+
+class ErrorResponse(BaseModel):
+    code: str
+    message: str

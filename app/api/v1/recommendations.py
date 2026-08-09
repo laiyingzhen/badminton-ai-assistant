@@ -1,14 +1,17 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
-from app.core.database import get_db
-from app.repositories.racket_repository import RacketRepository
+from app.api.dependencies import (
+    get_racket_candidate_limit,
+    get_recommendation_service,
+)
 from app.schemas.recommendation import (
+    ErrorResponse,
     RacketRecommendationRequest,
     RacketRecommendationResponse,
 )
-from app.services.gemini_service import GeminiService
-from app.services.recommendation_service import RecommendationService
+from app.services.recommendation_service import (
+    RecommendationService,
+)
 
 
 router = APIRouter(
@@ -20,23 +23,33 @@ router = APIRouter(
 @router.post(
     "/rackets",
     response_model=RacketRecommendationResponse,
+    responses={
+        404: {
+            "model": ErrorResponse,
+            "description": "No racket candidate found.",
+        },
+        502: {
+            "model": ErrorResponse,
+            "description": "AI recommendation service failed.",
+        },
+    },
 )
-def recommend_rackets(
+def recommend_racket(
     request: RacketRecommendationRequest,
-    db: Session = Depends(get_db),
+    service: RecommendationService = Depends(
+        get_recommendation_service
+    ),
+    candidate_limit: int = Depends(
+        get_racket_candidate_limit
+    ),
 ):
 
-    gemini_service = GeminiService()
-
-    racket_repository = RacketRepository(
-        db=db
+    racket, reason = service.recommend_racket(
+        request=request,
+        limit=candidate_limit,
     )
 
-    recommendation_service = RecommendationService(
-        gemini_service=gemini_service,
-        racket_repository=racket_repository,
-    )
-
-    return recommendation_service.recommend_rackets(
-        request
+    return RacketRecommendationResponse(
+        racket=racket,
+        reason=reason,
     )

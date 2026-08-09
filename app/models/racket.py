@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from sqlalchemy import Boolean, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
+from pgvector.sqlalchemy import VECTOR
 
 from app.core.database import Base
 
@@ -60,8 +61,36 @@ class Racket(Base):
         nullable=True,
     )
 
+    embedding: Mapped[list[float] | None] = mapped_column(
+        VECTOR(768),
+        nullable=True,
+    )
+
+    # embedding_text: Mapped[str | None] = mapped_column(
+    #     Text,
+    #     nullable=True,
+    # )
+
+    # embedding_model: Mapped[str | None] = mapped_column(
+    #     String(100),
+    #     nullable=True,
+    # )
+
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
         default=True,
     )
+
+    def build_embedding_text(self) -> str:
+        return f"""
+品牌：{self.brand}
+型號：{self.model}
+價格：NT$ {self.price}
+重量：{self.weight}
+平衡：{self.balance}
+硬度：{self.flexibility}
+適合程度：{self.suitable_level}
+適合打法：{self.playing_style}
+產品描述：{self.description}
+""".strip()
