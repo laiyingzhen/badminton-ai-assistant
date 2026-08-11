@@ -23,3 +23,13 @@ docker exec -it badminton-postgres psql -U badminton -d badminton
 conda deactivate
 #啟動虛擬環境
 .\.venv\Scripts\Activate.ps1
+
+#如果有新增推薦裝備，新的Table都要新增向量查詢使用的Embedded欄位
+1.使用 Alembic新增Embedded欄位語法如下：
+alembic revision --autogenerate -m "add embedding to shoes and strings"
+alembic upgrade head
+2.新增處理向量欄位
+python -m scripts.embed_shoes 
+python -m scripts.embed_strings
+#Alembic確認Model 與 DB Schema 是否有差異
+alembic check

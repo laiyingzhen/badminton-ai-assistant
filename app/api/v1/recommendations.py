@@ -8,6 +8,7 @@ from app.schemas.recommendation import (
     ErrorResponse,
     RacketRecommendationRequest,
     RacketRecommendationResponse,
+    EquipmentRecommendationResponse,
 )
 from app.services.recommendation_service import (
     RecommendationService,
@@ -53,3 +54,33 @@ def recommend_racket(
         racket=racket,
         reason=reason,
     )
+
+
+@router.post(
+    "/equipment",
+    response_model=EquipmentRecommendationResponse,
+)
+def recommend_equipment(
+    request: RacketRecommendationRequest,
+    service: RecommendationService = Depends(
+        get_recommendation_service
+    ),
+    candidate_limit: int = Depends(
+        get_racket_candidate_limit
+    ),
+):
+    return service.recommend_equipment(
+        request=request,
+        limit=candidate_limit,
+    )
+
+    # racket, reason = service.recommend_racket(
+    #     request=request,
+    #     limit=candidate_limit,
+    # )
+
+    # return RacketRecommendationResponse(
+    #     racket=racket,
+    #     reason=reason,
+    # )
+

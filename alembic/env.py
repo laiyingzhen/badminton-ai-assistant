@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from app.core.database import Base
-from app.models.racket import Racket
+from app.models import Racket, Shoe, StringProduct
 import os
 from dotenv import load_dotenv
 load_dotenv()

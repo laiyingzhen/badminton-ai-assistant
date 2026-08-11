@@ -87,3 +87,73 @@ def build_racket_recommendation_prompt(
     racket_context=racket_context,
 )}
 """
+
+
+def build_equipment_prompt(
+    self,
+    request,
+    rackets,
+    strings,
+    shoes,
+) -> str:
+
+    racket_text = "\n".join(
+        f"- ID={item.id}, "
+        f"{item.brand} {item.model}, "
+        f"價格={item.price}, "
+        f"相似度={item.similarity:.4f}"
+        for item in rackets
+    )
+
+    string_text = "\n".join(
+        f"- ID={item.id}, "
+        f"{item.brand} {item.model}, "
+        f"價格={item.price}, "
+        f"相似度={item.similarity:.4f}"
+        for item in strings
+    )
+
+    shoe_text = "\n".join(
+        f"- ID={item.id}, "
+        f"{item.brand} {item.model}, "
+        f"價格={item.price}, "
+        f"相似度={item.similarity:.4f}"
+        for item in shoes
+    )
+
+    return f"""
+你是一位專業羽球裝備推薦專家。
+
+請根據使用者的程度、打法與預算，
+從「資料庫實際存在的候選產品」中，
+各選擇一項最適合的：
+
+1. 羽球拍
+2. 羽球線
+3. 羽球鞋
+
+使用者需求：
+
+程度：{request.level}
+打法：{request.playing_style}
+預算：{request.budget}
+
+【球拍候選】
+{racket_text}
+
+【球線候選】
+{string_text}
+
+【球鞋候選】
+{shoe_text}
+
+重要規則：
+
+1. 只能從上述候選清單中選擇。
+2. 禁止自行創造不存在的產品。
+3. recommended_racket_id 必須存在於球拍候選。
+4. recommended_string_id 必須存在於球線候選。
+5. recommended_shoe_id 必須存在於球鞋候選。
+6. 必須考慮使用者程度、打法與預算。
+7. reason 請用繁體中文說明三項裝備搭配的原因。
+"""

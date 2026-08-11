@@ -37,6 +37,29 @@ class RacketCandidate(BaseModel):
             ),
         }
 
+class StringCandidate(BaseModel):
+    id: int
+    brand: str
+    model: str
+    price: Decimal
+    distance: float
+    similarity: float
+
+
+class ShoeCandidate(BaseModel):
+    id: int
+    brand: str
+    model: str
+    price: Decimal
+    distance: float
+    similarity: float
+
+
+class EquipmentRecommendationResponse(BaseModel):
+    racket: RacketCandidate
+    string: StringCandidate
+    shoe: ShoeCandidate
+    reason: str
 
 class RacketFinalRecommendation(BaseModel):
     recommended_racket_id: int = Field(
@@ -63,3 +86,14 @@ class RacketRecommendationResponse(BaseModel):
 class ErrorResponse(BaseModel):
     code: str
     message: str
+
+class EquipmentFinalRecommendation(BaseModel):
+
+    recommended_racket_id: int
+
+    recommended_string_id: int
+
+    recommended_shoe_id: int
+
+    reason: str
+
