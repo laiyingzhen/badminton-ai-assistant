@@ -1,20 +1,52 @@
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
 
+RacketLevel = Literal[
+    "beginner",
+    "intermediate",
+    "advanced",
+]
+
+RacketPlayingStyle = Literal[
+    "offensive",
+    "defensive",
+    "all_round",
+]
+
+RacketBrand = Literal[
+    "YONEX",
+    "VICTOR",
+    "LI-NING",
+    "JNICE",
+]
+
+
 class RacketRecommendationRequest(BaseModel):
-    level: str = Field(
-        description="使用者羽球程度，例如 beginner / intermediate / advanced"
+    level: RacketLevel = Field(
+        description=(
+            "使用者能力：beginner / intermediate / advanced"
+        )
     )
 
-    playing_style: str = Field(
-        description="使用者打法，例如 offensive / defensive / all_round"
+    playing_style: RacketPlayingStyle = Field(
+        description=(
+            "偏好打法：offensive / defensive / all_round"
+        )
     )
 
     budget: Decimal = Field(
         gt=0,
-        description="預算，單位為新台幣"
+        description="預算，必須大於 0。",
+    )
+
+    brand: RacketBrand | None = Field(
+        default=None,
+        description=(
+            "偏好品牌：YONEX / VICTOR / LI-NING / JNICE"
+        ),
     )
 
 
@@ -23,17 +55,19 @@ class RacketCandidate(BaseModel):
     brand: str
     model: str
     price: Decimal
-    distance: float
-    similarity: float
+    distance: float | None = None
+    similarity: float | None = None
 
     def to_prompt_dict(self) -> dict:
         return {
+            "id": self.id,
             "brand": self.brand,
             "model": self.model,
             "price": float(self.price),
-            "similarity": round(
-                self.similarity,
-                4,
+            "similarity": (
+                round(self.similarity, 4)
+                if self.similarity is not None
+                else None
             ),
         }
 
@@ -41,24 +75,19 @@ class RacketCandidate(BaseModel):
 class RacketFinalRecommendation(BaseModel):
     recommended_racket_id: int = Field(
         description=(
-            "The ID of the recommended racket. "
-            "Must be one of the candidate racket IDs."
+            "推薦球拍的 ID，必須是候選球拍 ID 之一。"
         )
     )
 
     reason: str = Field(
-        description="Reason why this racket is the best choice for the user."
+        description="推薦這支球拍的原因。",
     )
 
 
 class RacketRecommendationResponse(BaseModel):
-    racket: RacketCandidate = Field(
-        description="AI 最終推薦的球拍"
-    )
+    racket: RacketCandidate
+    reason: str
 
-    reason: str = Field(
-        description="AI 推薦理由"
-    )
 
 class ErrorResponse(BaseModel):
     code: str

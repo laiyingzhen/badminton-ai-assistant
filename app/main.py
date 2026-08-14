@@ -10,7 +10,7 @@ from app.api.exception_handlers import (
     no_racket_candidate_handler,
     validation_error_handler,
 )
-from app.api.v1 import recommendations
+from app.api.v1 import chat, recommendations
 from app.core.config import get_settings
 from app.core.logging_config import setup_logging
 from app.exceptions.recommendation import (
@@ -24,7 +24,6 @@ from app.exceptions.recommendation import (
 setup_logging()
 
 logger = logging.getLogger(__name__)
-
 settings = get_settings()
 
 
@@ -33,10 +32,6 @@ app = FastAPI(
     version=settings.app_version,
 )
 
-
-# ============================================================
-# Exception Handlers
-# ============================================================
 
 app.add_exception_handler(
     RequestValidationError,
@@ -64,18 +59,23 @@ app.add_exception_handler(
 )
 
 
-# ============================================================
-# Routers
-# ============================================================
-
 app.include_router(
     recommendations.router,
     prefix=settings.api_v1_prefix,
 )
+
+app.include_router(
+    chat.router,
+    prefix=settings.api_v1_prefix,
+)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 
 logger.info(
     "Application started: %s",
     settings.app_name,
 )
-

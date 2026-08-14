@@ -1,11 +1,10 @@
 import logging
+from decimal import Decimal
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.exceptions.recommendation import (
-    DatabaseServiceError,
-)
+from app.exceptions.recommendation import DatabaseServiceError
 from app.models.racket import Racket
 
 
@@ -20,33 +19,40 @@ class RacketRepository:
     def find_similar(
         self,
         query_embedding: list[float],
-        budget: float,
+        budget: Decimal,
         limit: int,
+        brand: str | None = None,
     ):
-
         try:
-
             distance = Racket.embedding.cosine_distance(
                 query_embedding
             )
 
-            return (
+            query = (
                 self.db.query(
                     Racket,
                     distance.label("distance"),
                 )
                 .filter(
-                    Racket.price <= budget
+                    Racket.is_active.is_(True),
+                    Racket.embedding.is_not(None),
+                    Racket.price <= budget,
                 )
-                .order_by(
-                    distance
+            )
+
+            if brand:
+                query = query.filter(
+                    Racket.brand.ilike(brand)
                 )
+
+            return (
+                query
+                .order_by(distance)
                 .limit(limit)
                 .all()
             )
 
         except SQLAlchemyError as exc:
-
             logger.exception(
                 "Database query failed while searching similar rackets."
             )
@@ -55,3 +61,55 @@ class RacketRepository:
                 "Unable to search racket database."
             ) from exc
 
+    def find_by_partial_conditions(
+        self,
+        playing_style: str | None,
+        level: str | None,
+        budget: Decimal | None,
+        brand: str | None,
+        limit: int = 3,
+    ) -> list[Racket]:
+        try:
+            query = self.db.query(Racket).filter(
+                Racket.is_active.is_(True)
+            )
+
+            if playing_style:
+                query = query.filter(
+                    Racket.playing_style == playing_style
+                )
+
+            if level:
+                query = query.filter(
+                    Racket.suitable_level == level
+                )
+
+            if budget is not None:
+                query = query.filter(
+                    Racket.price <= budget
+                )
+
+            if brand:
+                query = query.filter(
+                    Racket.brand.ilike(brand)
+                )
+
+            return (
+                query
+                .order_by(
+                    Racket.price.asc(),
+                    Racket.id.asc(),
+                )
+                .limit(limit)
+                .all()
+            )
+
+        except SQLAlchemyError as exc:
+            logger.exception(
+                "Database query failed while searching "
+                "partial racket conditions."
+            )
+
+            raise DatabaseServiceError(
+                "Unable to search racket database."
+            ) from exc

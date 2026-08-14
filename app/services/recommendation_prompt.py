@@ -13,14 +13,8 @@ class RecommendationPromptBuilder:
         request: RacketRecommendationRequest,
         candidates: list[RacketCandidate],
     ) -> str:
-
         candidate_data = [
-            {
-                "id": candidate.id,
-                "brand": candidate.brand,
-                "model": candidate.model,
-                "price": float(candidate.price),
-            }
+            candidate.to_prompt_dict()
             for candidate in candidates
         ]
 
@@ -31,24 +25,25 @@ class RecommendationPromptBuilder:
         )
 
         return f"""
-你是一位專業的羽球裝備推薦助手。
+你是一位專業的羽球拍推薦顧問。
 
-請根據使用者的程度、打法與預算，
-從「候選球拍清單」中選出最適合的一支球拍。
+請根據使用者條件，從候選球拍中選出最適合的一支。
 
-【使用者需求】
-- 羽球程度：{request.level}
+使用者條件：
+- 程度：{request.level}
 - 打法：{request.playing_style}
-- 預算：NT$ {request.budget}
+- 品牌偏好：{request.brand or "無品牌偏好"}
+- 預算上限：NT$ {request.budget}
 
-【候選球拍】
+候選球拍：
 {candidates_json}
 
-【重要規則】
-1. 只能從候選球拍清單中選擇。
-2. 不可以推薦候選清單以外的球拍。
-3. recommended_racket_id 必須是候選清單中的 id。
-4. 不可以修改候選球拍的品牌、型號或價格。
-5. 請根據使用者的程度、打法與預算判斷最適合的球拍。
-6. reason 請簡潔說明推薦理由。
-"""
+規則：
+1. 只能推薦候選清單中的球拍。
+2. recommended_racket_id 必須是候選球拍的 id。
+3. 不可虛構球拍型號、價格或規格。
+4. 必須符合預算。
+5. 如果有品牌偏好，候選球拍都已經過品牌篩選。
+6. reason 請使用繁體中文，簡潔說明程度、打法、
+   品牌與預算的適合原因。
+""".strip()

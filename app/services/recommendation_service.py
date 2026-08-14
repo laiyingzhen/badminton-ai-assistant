@@ -1,3 +1,7 @@
+from app.exceptions.recommendation import (
+    InvalidRacketCandidateError,
+    NoRacketCandidateError,
+)
 from app.repositories.racket_repository import RacketRepository
 from app.schemas.recommendation import (
     RacketCandidate,
@@ -8,10 +12,6 @@ from app.services.embedding_service import EmbeddingService
 from app.services.gemini_service import GeminiService
 from app.services.recommendation_prompt import (
     RecommendationPromptBuilder,
-)
-from app.exceptions.recommendation import (
-    InvalidRacketCandidateError,
-    NoRacketCandidateError,
 )
 
 
@@ -46,7 +46,6 @@ class RecommendationService:
         self,
         request: RacketRecommendationRequest,
     ) -> str:
-
         level = LEVEL_LABELS.get(
             request.level,
             request.level,
@@ -57,9 +56,12 @@ class RecommendationService:
             request.playing_style,
         )
 
+        brand = request.brand or "無品牌偏好"
+
         return (
-            f"羽球程度：{level}\n"
+            f"使用者程度：{level}\n"
             f"打法：{playing_style}\n"
+            f"品牌：{brand}\n"
             f"預算：{request.budget} 元"
         )
 
@@ -67,7 +69,6 @@ class RecommendationService:
         self,
         request: RacketRecommendationRequest,
     ) -> list[float]:
-
         query_text = self.build_query_text(request)
 
         return self.embedding_service.embed_query(
@@ -79,7 +80,6 @@ class RecommendationService:
         request: RacketRecommendationRequest,
         limit: int = 5,
     ):
-
         query_embedding = self.create_query_embedding(
             request
         )
@@ -87,6 +87,7 @@ class RecommendationService:
         return self.racket_repository.find_similar(
             query_embedding=query_embedding,
             budget=request.budget,
+            brand=request.brand,
             limit=limit,
         )
 
@@ -95,7 +96,6 @@ class RecommendationService:
         request: RacketRecommendationRequest,
         limit: int = 5,
     ) -> list[RacketCandidate]:
-
         results = self.search_rackets(
             request=request,
             limit=limit,
@@ -118,7 +118,6 @@ class RecommendationService:
         request: RacketRecommendationRequest,
         limit: int = 5,
     ) -> tuple[RacketCandidate, str]:
-
         candidates = self.search_racket_candidates(
             request=request,
             limit=limit,
@@ -127,7 +126,7 @@ class RecommendationService:
         if not candidates:
             raise NoRacketCandidateError(
                 budget=float(request.budget)
-        )
+            )
 
         prompt = self.prompt_builder.build_racket_prompt(
             request=request,
@@ -151,6 +150,6 @@ class RecommendationService:
         if selected_candidate is None:
             raise InvalidRacketCandidateError(
                 racket_id=result.recommended_racket_id
-        )
+            )
 
         return selected_candidate, result.reason
