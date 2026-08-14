@@ -177,7 +177,10 @@ class RacketChatService:
         if extraction.level is not None:
             session.level = extraction.level
 
-        if extraction.budget is not None:
+        if (
+            extraction.budget is not None
+            and extraction.budget > 0
+        ):
             session.budget = extraction.budget
 
         if extraction.clear_brand:

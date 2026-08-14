@@ -28,24 +28,24 @@ class ChatRequest(BaseModel):
         ),
     )
 
-
 class ExtractedRacketCriteria(BaseModel):
     playing_style: RacketPlayingStyle | None = None
     brand: RacketBrand | None = None
     level: RacketLevel | None = None
+
     budget: Decimal | None = Field(
         default=None,
         gt=0,
     )
 
-
 class CriteriaExtractionResult(BaseModel):
     playing_style: RacketPlayingStyle | None = None
     brand: RacketBrand | None = None
     level: RacketLevel | None = None
-    budget: Decimal | None = Field(
+
+    budget: int | None = Field(
         default=None,
-        gt=0,
+        description="新台幣預算上限；找不到時回傳 null。",
     )
 
     clear_brand: bool = Field(

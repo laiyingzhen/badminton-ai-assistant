@@ -77,9 +77,14 @@ class GeminiService:
         except Exception as exc:
 
             logger.exception(
-                "Gemini API call failed."
+                "Gemini API call failed. "
+                "model=%s schema=%s error=%r",
+                self.model,
+                response_schema.__name__,
+                exc,
             )
 
             raise GeminiServiceError(
-                "Gemini recommendation service is unavailable."
+                "Gemini recommendation service is unavailable. "
+                f"Cause: {type(exc).__name__}: {exc}"
             ) from exc
