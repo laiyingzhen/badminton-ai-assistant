@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>AI羽球裝備助手</title>
+
+  <style>
+    :root {
+      --primary: #166534;
+      --primary-light: #22c55e;
+      --background: #f0fdf4;
+      --surface: #ffffff;
+      --border: #dcfce7;
+      --text: #17201b;
+      --muted: #64748b;
+      --danger: #dc2626;
+      --user-message: #166534;
+      --assistant-message: #f1f5f9;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #dcfce7, transparent 35%),
+        linear-gradient(135deg, #f8fafc, var(--background));
+      font-family:
+        "Noto Sans TC",
+        "Microsoft JhengHei",
+        system-ui,
+        sans-serif;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: min(900px, 100%);
+      margin: 0 auto;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgb(22 101 52 / 12%);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 22px 24px;
+      color: white;
+      background: linear-gradient(135deg, #14532d, #16a34a);
+    }
+
+    .title-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      display: grid;
+      flex: 0 0 auto;
+      width: 48px;
+      height: 48px;
+      place-items: center;
+      font-size: 26px;
+      background: rgb(255 255 255 / 16%);
+      border: 1px solid rgb(255 255 255 / 25%);
+      border-radius: 15px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(20px, 4vw, 28px);
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      color: rgb(255 255 255 / 75%);
+      font-size: 14px;
+    }
+
+    .reset-button {
+      padding: 9px 14px;
+      color: white;
+      cursor: pointer;
+      background: rgb(255 255 255 / 12%);
+      border: 1px solid rgb(255 255 255 / 30%);
+      border-radius: 10px;
+    }
+
+    .reset-button:hover {
+      background: rgb(255 255 255 / 20%);
+    }
+
+    .settings {
+      padding: 16px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .settings label {
+      display: block;
+      margin-bottom: 7px;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .api-input {
+      width: 100%;
+      padding: 10px 12px;
+      color: #334155;
+      background: white;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .api-input:focus,
+    .message-input:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgb(34 197 94 / 14%);
+    }
+
+    .connection-state {
+      display: flex;
+      align-items: center;
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .state-dot {
+      width: 8px;
+      height: 8px;
+      margin-right: 7px;
+      background: #94a3b8;
+      border-radius: 50%;
+    }
+
+    .state-dot.online {
+      background: #22c55e;
+    }
+
+    .state-dot.error {
+      background: #ef4444;
+    }
+
+    .messages {
+      height: min(58vh, 580px);
+      min-height: 380px;
+      padding: 24px;
+      overflow-y: auto;
+      background:
+        linear-gradient(rgb(255 255 255 / 92%), rgb(255 255 255 / 92%)),
+        repeating-linear-gradient(
+          45deg,
+          #dcfce7,
+          #dcfce7 10px,
+          #f0fdf4 10px,
+          #f0fdf4 20px
+        );
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 18px;
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .bubble {
+      max-width: min(64%, 520px);
+      padding: 10px 13px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      border-radius: 17px;
+    }
+
+    .assistant .bubble {
+      color: #334155;
+      background: var(--assistant-message);
+      border-bottom-left-radius: 5px;
+    }
+
+    .user .bubble {
+      color: white;
+      background: var(--user-message);
+      border-bottom-right-radius: 5px;
+    }
+
+    .message-meta {
+      margin-bottom: 5px;
+      color: #94a3b8;
+      font-size: 11px;
+    }
+
+    .user .message-meta {
+      color: rgb(255 255 255 / 65%);
+      text-align: right;
+    }
+
+    .recommendation {
+      margin-top: 12px;
+      padding: 13px;
+      color: #14532d;
+      background: #dcfce7;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+    }
+
+    .recommendation strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .criteria {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 11px;
+    }
+
+    .tag {
+      padding: 4px 8px;
+      color: #166534;
+      font-size: 12px;
+      background: #dcfce7;
+      border-radius: 999px;
+    }
+
+    details {
+      margin-top: 11px;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+    }
+
+    pre {
+      max-height: 250px;
+      padding: 10px;
+      overflow: auto;
+      color: #d1fae5;
+      background: #0f172a;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
+
+    .composer {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      padding: 18px 24px 24px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .message-input {
+      width: 100%;
+      min-height: 48px;
+      max-height: 150px;
+      padding: 12px 14px;
+      resize: none;
+      border: 1px solid #cbd5e1;
+      border-radius: 14px;
+      outline: none;
+    }
+
+    .send-button {
+      min-width: 90px;
+      height: 48px;
+      padding: 0 18px;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--primary);
+      border: 0;
+      border-radius: 14px;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background: #14532d;
+    }
+
+    .send-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .error-message {
+      color: var(--danger);
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+
+    .typing {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing span {
+      width: 7px;
+      height: 7px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: typing 1.2s infinite ease-in-out;
+    }
+
+    .typing span:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    .typing span:nth-child(3) {
+      animation-delay: 0.3s;
+    }
+
+    @keyframes typing {
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+      }
+
+      30% {
+        transform: translateY(-5px);
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 0;
+      }
+
+      .app {
+        min-height: 100vh;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .header,
+      .settings,
+      .messages,
+      .composer {
+        padding-right: 16px;
+        padding-left: 16px;
+      }
+
+      .subtitle {
+        display: none;
+      }
+
+      .messages {
+        height: calc(100vh - 260px);
+        min-height: 300px;
+      }
+
+      .bubble {
+        max-width: 80%;
+      }
+
+      .send-button {
+        min-width: 72px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="title-group">
+        <div class="logo">🏸</div>
+
+        <div>
+          <h1>AI羽球裝備助手</h1>
+          <p class="subtitle">告訴我你的球風、程度、預算與品牌偏好</p>
+        </div>
+      </div>
+
+      <button
+        id="resetButton"
+        class="reset-button"
+        type="button"
+      >
+        重新對話
+      </button>
+    </header>
+
+    <section class="settings">
+      <label for="apiUrl">API 網址</label>
+
+      <div class="api-row">
+        <input
+          id="apiUrl"
+          class="api-input"
+          type="url"
+          value="http://127.0.0.1:8000/api/v1/recommendations/rackets/chat"
+          autocomplete="off"
+          spellcheck="false"
+        >
+      </div>
+
+      <div class="connection-state">
+        <span id="stateDot" class="state-dot"></span>
+        <span id="stateText">尚未送出請求</span>
+      </div>
+    </section>
+
+    <section
+      id="messages"
+      class="messages"
+      aria-live="polite"
+    >
+      <div class="message assistant">
+        <div class="bubble">
+          <div class="message-meta">AI 助手</div>
+          嗨！我是你的 AI 羽球裝備助手。請告訴我你的程度、打法、預算或偏好的品牌，我會協助你挑選適合的球拍。
+        </div>
+      </div>
+    </section>
+
+    <form id="chatForm" class="composer">
+      <textarea
+        id="messageInput"
+        class="message-input"
+        rows="1"
+        maxlength="2000"
+        placeholder="例如：我是中階進攻型球員，預算 5000 元左右……"
+        required
+      ></textarea>
+
+      <button
+        id="sendButton"
+        class="send-button"
+        type="submit"
+      >
+        送出
+      </button>
+    </form>
+  </main>
+
+  <script>
+    const chatForm = document.querySelector("#chatForm");
+    const messageInput = document.querySelector("#messageInput");
+    const sendButton = document.querySelector("#sendButton");
+    const resetButton = document.querySelector("#resetButton");
+    const messagesElement = document.querySelector("#messages");
+    const apiUrlInput = document.querySelector("#apiUrl");
+    const stateDot = document.querySelector("#stateDot");
+    const stateText = document.querySelector("#stateText");
+
+    let sessionId = localStorage.getItem("racketChatSessionId");
+    let isSending = false;
+
+    const fieldLabels = {
+      playing_style: "打法",
+      level: "程度",
+      budget: "預算",
+      brand: "品牌"
+    };
+
+    const valueLabels = {
+      offensive: "進攻型",
+      defensive: "防守型",
+      all_round: "全能型",
+      beginner: "初階",
+      intermediate: "中階",
+      advanced: "進階"
+    };
+
+    function escapeHtml(value) {
+      const element = document.createElement("div");
+      element.textContent = String(value ?? "");
+      return element.innerHTML;
+    }
+
+    function formatValue(key, value) {
+      if (value === null || value === undefined || value === "") {
+        return "";
+      }
+
+      if (key === "budget") {
+        return `NT$ ${Number(value).toLocaleString("zh-TW")}`;
+      }
+
+      return valueLabels[value] || value;
+    }
+
+    function setConnectionState(type, text) {
+      stateDot.className = `state-dot ${type || ""}`;
+      stateText.textContent = text;
+    }
+
+    function scrollToBottom() {
+      messagesElement.scrollTop = messagesElement.scrollHeight;
+    }
+
+    function addUserMessage(text) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message user";
+      wrapper.innerHTML = `
+        <div class="bubble">
+          <div class="message-meta">你</div>
+          ${escapeHtml(text)}
+        </div>
+      `;
+
+      messagesElement.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function buildCriteriaHtml(criteria) {
+      if (!criteria) {
+        return "";
+      }
+
+      const tags = Object.entries(criteria)
+        .filter(([, value]) => value !== null && value !== undefined)
+        .map(([key, value]) => {
+          const label = fieldLabels[key] || key;
+          return `
+            <span class="tag">
+              ${escapeHtml(label)}：${escapeHtml(formatValue(key, value))}
+            </span>
+          `;
+        })
+        .join("");
+
+      return tags ? `<div class="criteria">${tags}</div>` : "";
+    }
+
+    function buildRecommendationHtml(recommendation) {
+      if (!recommendation) {
+        return "";
+      }
+
+      const price = Number(recommendation.price).toLocaleString("zh-TW");
+
+      return `
+        <div class="recommendation">
+          <strong>
+            ${escapeHtml(recommendation.brand)}
+            ${escapeHtml(recommendation.model)}
+          </strong>
+          <span>參考價格：NT$ ${escapeHtml(price)}</span>
+        </div>
+      `;
+    }
+
+    function addAssistantMessage(data) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message assistant";
+
+      wrapper.innerHTML = `
+        <div class="bubble">
+          <div class="message-meta">
+            AI 助手 · 狀態：${escapeHtml(data.status)}
+          </div>
+          ${escapeHtml(data.message)}
+          ${buildRecommendationHtml(data.recommendation)}
+          ${buildCriteriaHtml(data.criteria)}
+
+          <details>
+            <summary>查看 API 原始回應</summary>
+            <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+          </details>
+
+        </div>
+      `;
+
+      messagesElement.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function addErrorMessage(message, details) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "message assistant";
+
+      wrapper.innerHTML = `
+        <div class="bubble error-message">
+          <strong>請求失敗</strong><br>
+          ${escapeHtml(message)}
+
+          ${
+            details
+              ? `
+                <details>
+                  <summary>查看錯誤內容</summary>
+                  <pre>${escapeHtml(details)}</pre>
+                </details>
+              `
+              : ""
+          }
+        </div>
+      `;
+
+      messagesElement.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function showTyping() {
+      const wrapper = document.createElement("div");
+      wrapper.id = "typingMessage";
+      wrapper.className = "message assistant";
+      wrapper.innerHTML = `
+        <div class="bubble">
+          <span class="typing" aria-label="AI 回覆中">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </div>
+      `;
+
+      messagesElement.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function hideTyping() {
+      document.querySelector("#typingMessage")?.remove();
+    }
+
+    function setSending(sending) {
+      isSending = sending;
+      sendButton.disabled = sending;
+      messageInput.disabled = sending;
+      sendButton.textContent = sending ? "傳送中" : "送出";
+    }
+
+    async function sendMessage(message) {
+      const apiUrl = apiUrlInput.value.trim();
+
+      if (!apiUrl) {
+        addErrorMessage("請先輸入 API 網址。");
+        return;
+      }
+
+      const payload = {
+        message
+      };
+
+      if (sessionId) {
+        payload.session_id = sessionId;
+      }
+
+      setSending(true);
+      setConnectionState("", "正在連線至 API……");
+      showTyping();
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const responseText = await response.text();
+
+        let data;
+
+        try {
+          data = responseText ? JSON.parse(responseText) : {};
+        } catch {
+          data = {
+            message: responseText
+          };
+        }
+
+        if (!response.ok) {
+          const errorMessage =
+            data?.detail?.message ||
+            data?.message ||
+            `HTTP ${response.status} ${response.statusText}`;
+
+          throw new Error(errorMessage, {
+            cause: JSON.stringify(data, null, 2)
+          });
+        }
+
+        if (data.session_id) {
+          sessionId = data.session_id;
+          localStorage.setItem("racketChatSessionId", sessionId);
+        }
+
+        hideTyping();
+        addAssistantMessage(data);
+        setConnectionState("online", `API 連線成功 · Session：${sessionId}`);
+      } catch (error) {
+        hideTyping();
+
+        const message =
+          error instanceof TypeError
+            ? "無法連線至 API。請確認後端已啟動，並檢查瀏覽器的 CORS 設定。"
+            : error.message;
+
+        addErrorMessage(message, error.cause);
+        setConnectionState("error", "API 連線失敗");
+      } finally {
+        setSending(false);
+        messageInput.focus();
+      }
+    }
+
+    chatForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const message = messageInput.value.trim();
+
+      if (!message || isSending) {
+        return;
+      }
+
+      addUserMessage(message);
+      messageInput.value = "";
+      messageInput.style.height = "auto";
+
+      await sendMessage(message);
+    });
+
+    messageInput.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        !event.isComposing
+      ) {
+        event.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+
+    messageInput.addEventListener("input", () => {
+      messageInput.style.height = "auto";
+      messageInput.style.height =
+        `${Math.min(messageInput.scrollHeight, 150)}px`;
+    });
+
+    resetButton.addEventListener("click", () => {
+      sessionId = null;
+      localStorage.removeItem("racketChatSessionId");
+
+      messagesElement.innerHTML = `
+        <div class="message assistant">
+          <div class="bubble">
+            <div class="message-meta">AI 助手</div>
+            新的對話已開始。請告訴我你想找什麼樣的羽球拍！
+          </div>
+        </div>
+      `;
+
+      setConnectionState("", "對話已重設");
+      messageInput.focus();
+    });
+
+    if (sessionId) {
+      setConnectionState("", `已載入 Session：${sessionId}`);
+    }
+
+    messageInput.focus();
+  </script>
+</body>
+</html>
