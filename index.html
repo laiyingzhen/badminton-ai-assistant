@@ -194,8 +194,8 @@
     }
 
     .bubble {
-      max-width: min(76%, 650px);
-      padding: 13px 16px;
+      max-width: min(64%, 520px);
+      padding: 10px 13px;
       line-height: 1.65;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
@@ -215,7 +215,7 @@
     }
 
     .message-meta {
-      margin-top: 7px;
+      margin-bottom: 5px;
       color: #94a3b8;
       font-size: 11px;
     }
@@ -383,7 +383,7 @@
       }
 
       .bubble {
-        max-width: 88%;
+        max-width: 80%;
       }
 
       .send-button {
@@ -441,9 +441,8 @@
     >
       <div class="message assistant">
         <div class="bubble">
-          嗨！我是你的 AI 羽球裝備助手。請告訴我你的程度、打法、預算或偏好的品牌，我會協助你挑選適合的球拍。
-
           <div class="message-meta">AI 助手</div>
+          嗨！我是你的 AI 羽球裝備助手。請告訴我你的程度、打法、預算或偏好的品牌，我會協助你挑選適合的球拍。
         </div>
       </div>
     </section>
@@ -529,8 +528,8 @@
       wrapper.className = "message user";
       wrapper.innerHTML = `
         <div class="bubble">
-          ${escapeHtml(text)}
           <div class="message-meta">你</div>
+          ${escapeHtml(text)}
         </div>
       `;
 
@@ -582,6 +581,9 @@
 
       wrapper.innerHTML = `
         <div class="bubble">
+          <div class="message-meta">
+            AI 助手 · 狀態：${escapeHtml(data.status)}
+          </div>
           ${escapeHtml(data.message)}
           ${buildRecommendationHtml(data.recommendation)}
           ${buildCriteriaHtml(data.criteria)}
@@ -591,9 +593,6 @@
             <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
           </details>
 
-          <div class="message-meta">
-            AI 助手 · 狀態：${escapeHtml(data.status)}
-          </div>
         </div>
       `;
 
@@ -773,8 +772,8 @@
       messagesElement.innerHTML = `
         <div class="message assistant">
           <div class="bubble">
-            新的對話已開始。請告訴我你想找什麼樣的羽球拍！
             <div class="message-meta">AI 助手</div>
+            新的對話已開始。請告訴我你想找什麼樣的羽球拍！
           </div>
         </div>
       `;
