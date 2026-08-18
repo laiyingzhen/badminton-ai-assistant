@@ -2,15 +2,18 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
-  <title>AI羽球裝備助手</title>
+
+  <title>AI 羽球裝備助手</title>
 
   <style>
     :root {
       --primary: #166534;
+      --primary-dark: #14532d;
       --primary-light: #22c55e;
       --background: #f0fdf4;
       --surface: #ffffff;
@@ -18,6 +21,7 @@
       --text: #17201b;
       --muted: #64748b;
       --danger: #dc2626;
+      --danger-dark: #b91c1c;
       --user-message: #166534;
       --assistant-message: #f1f5f9;
     }
@@ -32,8 +36,16 @@
       padding: 24px;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, #dcfce7, transparent 35%),
-        linear-gradient(135deg, #f8fafc, var(--background));
+        radial-gradient(
+          circle at top left,
+          #dcfce7,
+          transparent 35%
+        ),
+        linear-gradient(
+          135deg,
+          #f8fafc,
+          var(--background)
+        );
       font-family:
         "Noto Sans TC",
         "Microsoft JhengHei",
@@ -64,7 +76,12 @@
       gap: 16px;
       padding: 22px 24px;
       color: white;
-      background: linear-gradient(135deg, #14532d, #16a34a);
+      background:
+        linear-gradient(
+          135deg,
+          #14532d,
+          #16a34a
+        );
     }
 
     .title-group {
@@ -105,8 +122,13 @@
       border-radius: 10px;
     }
 
-    .reset-button:hover {
+    .reset-button:hover:not(:disabled) {
       background: rgb(255 255 255 / 20%);
+    }
+
+    .reset-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
     }
 
     .settings {
@@ -141,7 +163,8 @@
     .api-input:focus,
     .message-input:focus {
       border-color: var(--primary-light);
-      box-shadow: 0 0 0 3px rgb(34 197 94 / 14%);
+      box-shadow:
+        0 0 0 3px rgb(34 197 94 / 14%);
     }
 
     .connection-state {
@@ -168,13 +191,21 @@
       background: #ef4444;
     }
 
+    .state-dot.recording {
+      background: #ef4444;
+      animation: pulse 1.2s infinite;
+    }
+
     .messages {
       height: min(58vh, 580px);
       min-height: 380px;
       padding: 24px;
       overflow-y: auto;
       background:
-        linear-gradient(rgb(255 255 255 / 92%), rgb(255 255 255 / 92%)),
+        linear-gradient(
+          rgb(255 255 255 / 92%),
+          rgb(255 255 255 / 92%)
+        ),
         repeating-linear-gradient(
           45deg,
           #dcfce7,
@@ -274,12 +305,39 @@
       white-space: pre-wrap;
     }
 
+    .composer-area {
+      padding: 14px 24px 24px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .recording-status {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 32px;
+      margin-bottom: 10px;
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .recording-status.visible {
+      display: flex;
+    }
+
+    .recording-indicator {
+      width: 9px;
+      height: 9px;
+      background: var(--danger);
+      border-radius: 50%;
+      animation: pulse 1.2s infinite;
+    }
+
     .composer {
       display: flex;
       align-items: flex-end;
-      gap: 12px;
-      padding: 18px 24px 24px;
-      border-top: 1px solid #e2e8f0;
+      gap: 10px;
     }
 
     .message-input {
@@ -293,25 +351,67 @@
       outline: none;
     }
 
+    .message-input:disabled {
+      background: #f8fafc;
+      cursor: not-allowed;
+    }
+
+    .voice-button,
     .send-button {
-      min-width: 90px;
+      flex: 0 0 auto;
       height: 48px;
-      padding: 0 18px;
-      color: white;
-      font-weight: 700;
       cursor: pointer;
-      background: var(--primary);
-      border: 0;
       border-radius: 14px;
     }
 
-    .send-button:hover:not(:disabled) {
-      background: #14532d;
+    .voice-button {
+      width: 48px;
+      padding: 0;
+      color: var(--primary);
+      font-size: 21px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
     }
 
+    .voice-button:hover:not(:disabled) {
+      background: #dcfce7;
+    }
+
+    .voice-button.recording {
+      color: white;
+      background: var(--danger);
+      border-color: var(--danger);
+      animation: pulse-shadow 1.2s infinite;
+    }
+
+    .voice-button.recording:hover:not(:disabled) {
+      background: var(--danger-dark);
+    }
+
+    .voice-button:disabled,
     .send-button:disabled {
       cursor: not-allowed;
       opacity: 0.55;
+    }
+
+    .send-button {
+      min-width: 90px;
+      padding: 0 18px;
+      color: white;
+      font-weight: 700;
+      background: var(--primary);
+      border: 0;
+    }
+
+    .send-button:hover:not(:disabled) {
+      background: var(--primary-dark);
+    }
+
+    .input-help {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
     }
 
     .error-message {
@@ -354,6 +454,28 @@
       }
     }
 
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.35;
+      }
+    }
+
+    @keyframes pulse-shadow {
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgb(220 38 38 / 30%);
+      }
+
+      50% {
+        box-shadow: 0 0 0 7px rgb(220 38 38 / 0%);
+      }
+    }
+
     @media (max-width: 640px) {
       body {
         padding: 0;
@@ -368,7 +490,7 @@
       .header,
       .settings,
       .messages,
-      .composer {
+      .composer-area {
         padding-right: 16px;
         padding-left: 16px;
       }
@@ -378,7 +500,7 @@
       }
 
       .messages {
-        height: calc(100vh - 260px);
+        height: calc(100vh - 300px);
         min-height: 300px;
       }
 
@@ -400,8 +522,11 @@
         <div class="logo">🏸</div>
 
         <div>
-          <h1>AI羽球裝備助手</h1>
-          <p class="subtitle">告訴我你的球風、程度、預算與品牌偏好</p>
+          <h1>AI 羽球裝備助手</h1>
+
+          <p class="subtitle">
+            告訴我你的球風、程度、預算與品牌偏好
+          </p>
         </div>
       </div>
 
@@ -415,7 +540,9 @@
     </header>
 
     <section class="settings">
-      <label for="apiUrl">API 網址</label>
+      <label for="apiUrl">
+        文字聊天 API 網址
+      </label>
 
       <div class="api-row">
         <input
@@ -429,8 +556,14 @@
       </div>
 
       <div class="connection-state">
-        <span id="stateDot" class="state-dot"></span>
-        <span id="stateText">尚未送出請求</span>
+        <span
+          id="stateDot"
+          class="state-dot"
+        ></span>
+
+        <span id="stateText">
+          尚未送出請求
+        </span>
       </div>
     </section>
 
@@ -441,44 +574,117 @@
     >
       <div class="message assistant">
         <div class="bubble">
-          <div class="message-meta">AI 助手</div>
-          嗨！我是你的 AI 羽球裝備助手。請告訴我你的程度、打法、預算或偏好的品牌，我會協助你挑選適合的球拍。
+          <div class="message-meta">
+            AI 助手
+          </div>
+
+          嗨！我是你的 AI 羽球裝備助手。你可以輸入文字，或按下麥克風錄製語音，告訴我你的程度、打法、預算與品牌偏好。
         </div>
       </div>
     </section>
 
-    <form id="chatForm" class="composer">
-      <textarea
-        id="messageInput"
-        class="message-input"
-        rows="1"
-        maxlength="2000"
-        placeholder="例如：我是中階進攻型球員，預算 5000 元左右……"
-        required
-      ></textarea>
-
-      <button
-        id="sendButton"
-        class="send-button"
-        type="submit"
+    <section class="composer-area">
+      <div
+        id="recordingStatus"
+        class="recording-status"
+        role="status"
+        aria-live="polite"
       >
-        送出
-      </button>
-    </form>
+        <span class="recording-indicator"></span>
+
+        <span>
+          錄音中
+          <span id="recordingTime">00:00</span>
+          ，再次按下麥克風即可送出
+        </span>
+      </div>
+
+      <form
+        id="chatForm"
+        class="composer"
+      >
+        <textarea
+          id="messageInput"
+          class="message-input"
+          rows="1"
+          maxlength="2000"
+          placeholder="例如：我是中階進攻型球員，預算 5000 元左右……"
+          aria-label="聊天訊息"
+          required
+        ></textarea>
+
+        <button
+          id="voiceButton"
+          class="voice-button"
+          type="button"
+          aria-label="開始錄音"
+          title="開始錄音"
+        >
+          🎙️
+        </button>
+
+        <button
+          id="sendButton"
+          class="send-button"
+          type="submit"
+        >
+          送出
+        </button>
+      </form>
+
+      <p id="inputHelp" class="input-help">
+        按 Enter 送出文字；按麥克風開始錄音，再按一次停止並送出
+      </p>
+    </section>
   </main>
 
   <script>
-    const chatForm = document.querySelector("#chatForm");
-    const messageInput = document.querySelector("#messageInput");
-    const sendButton = document.querySelector("#sendButton");
-    const resetButton = document.querySelector("#resetButton");
-    const messagesElement = document.querySelector("#messages");
-    const apiUrlInput = document.querySelector("#apiUrl");
-    const stateDot = document.querySelector("#stateDot");
-    const stateText = document.querySelector("#stateText");
+    const chatForm =
+      document.querySelector("#chatForm");
 
-    let sessionId = localStorage.getItem("racketChatSessionId");
+    const messageInput =
+      document.querySelector("#messageInput");
+
+    const sendButton =
+      document.querySelector("#sendButton");
+
+    const voiceButton =
+      document.querySelector("#voiceButton");
+
+    const resetButton =
+      document.querySelector("#resetButton");
+
+    const messagesElement =
+      document.querySelector("#messages");
+
+    const apiUrlInput =
+      document.querySelector("#apiUrl");
+
+    const stateDot =
+      document.querySelector("#stateDot");
+
+    const stateText =
+      document.querySelector("#stateText");
+
+    const recordingStatus =
+      document.querySelector("#recordingStatus");
+
+    const recordingTime =
+      document.querySelector("#recordingTime");
+
+    const inputHelp =
+      document.querySelector("#inputHelp");
+
+    let sessionId =
+      localStorage.getItem("racketChatSessionId");
+
     let isSending = false;
+    let isRecording = false;
+    let mediaRecorder = null;
+    let microphoneStream = null;
+    let audioChunks = [];
+    let recordingStartedAt = null;
+    let recordingTimerId = null;
 
     const fieldLabels = {
       playing_style: "打法",
@@ -503,32 +709,55 @@
     }
 
     function formatValue(key, value) {
-      if (value === null || value === undefined || value === "") {
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
         return "";
       }
 
       if (key === "budget") {
-        return `NT$ ${Number(value).toLocaleString("zh-TW")}`;
+        return `NT$ ${
+          Number(value).toLocaleString("zh-TW")
+        }`;
       }
 
       return valueLabels[value] || value;
     }
 
     function setConnectionState(type, text) {
-      stateDot.className = `state-dot ${type || ""}`;
+      stateDot.className =
+        `state-dot ${type || ""}`;
+
       stateText.textContent = text;
     }
 
     function scrollToBottom() {
-      messagesElement.scrollTop = messagesElement.scrollHeight;
+      messagesElement.scrollTop =
+        messagesElement.scrollHeight;
     }
 
-    function addUserMessage(text) {
-      const wrapper = document.createElement("div");
+    function addUserMessage(
+      text,
+      inputType = "text"
+    ) {
+      const wrapper =
+        document.createElement("div");
+
+      const sourceLabel =
+        inputType === "voice"
+          ? "你 · 🎙️ 語音"
+          : "你 · 文字";
+
       wrapper.className = "message user";
+
       wrapper.innerHTML = `
         <div class="bubble">
-          <div class="message-meta">你</div>
+          <div class="message-meta">
+            ${escapeHtml(sourceLabel)}
+          </div>
+
           ${escapeHtml(text)}
         </div>
       `;
@@ -543,26 +772,40 @@
       }
 
       const tags = Object.entries(criteria)
-        .filter(([, value]) => value !== null && value !== undefined)
+        .filter(([, value]) => (
+          value !== null &&
+          value !== undefined &&
+          value !== ""
+        ))
         .map(([key, value]) => {
-          const label = fieldLabels[key] || key;
+          const label =
+            fieldLabels[key] || key;
+
           return `
             <span class="tag">
-              ${escapeHtml(label)}：${escapeHtml(formatValue(key, value))}
+              ${escapeHtml(label)}：${
+                escapeHtml(formatValue(key, value))
+              }
             </span>
           `;
         })
         .join("");
 
-      return tags ? `<div class="criteria">${tags}</div>` : "";
+      return tags
+        ? `<div class="criteria">${tags}</div>`
+        : "";
     }
 
-    function buildRecommendationHtml(recommendation) {
+    function buildRecommendationHtml(
+      recommendation
+    ) {
       if (!recommendation) {
         return "";
       }
 
-      const price = Number(recommendation.price).toLocaleString("zh-TW");
+      const price = Number(
+        recommendation.price
+      ).toLocaleString("zh-TW");
 
       return `
         <div class="recommendation">
@@ -570,29 +813,50 @@
             ${escapeHtml(recommendation.brand)}
             ${escapeHtml(recommendation.model)}
           </strong>
-          <span>參考價格：NT$ ${escapeHtml(price)}</span>
+
+          <span>
+            參考價格：NT$ ${escapeHtml(price)}
+          </span>
         </div>
       `;
     }
 
     function addAssistantMessage(data) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "message assistant";
+      const wrapper =
+        document.createElement("div");
+
+      wrapper.className =
+        "message assistant";
 
       wrapper.innerHTML = `
         <div class="bubble">
           <div class="message-meta">
-            AI 助手 · 狀態：${escapeHtml(data.status)}
+            AI 助手 · 狀態：${
+              escapeHtml(data.status)
+            }
           </div>
+
           ${escapeHtml(data.message)}
-          ${buildRecommendationHtml(data.recommendation)}
+
+          ${
+            buildRecommendationHtml(
+              data.recommendation
+            )
+          }
+
           ${buildCriteriaHtml(data.criteria)}
 
           <details>
-            <summary>查看 API 原始回應</summary>
-            <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
-          </details>
+            <summary>
+              查看 API 原始回應
+            </summary>
 
+            <pre>${
+              escapeHtml(
+                JSON.stringify(data, null, 2)
+              )
+            }</pre>
+          </details>
         </div>
       `;
 
@@ -601,19 +865,26 @@
     }
 
     function addErrorMessage(message, details) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "message assistant";
+      const wrapper =
+        document.createElement("div");
+
+      wrapper.className =
+        "message assistant";
 
       wrapper.innerHTML = `
         <div class="bubble error-message">
           <strong>請求失敗</strong><br>
+
           ${escapeHtml(message)}
 
           ${
             details
               ? `
                 <details>
-                  <summary>查看錯誤內容</summary>
+                  <summary>
+                    查看錯誤內容
+                  </summary>
+
                   <pre>${escapeHtml(details)}</pre>
                 </details>
               `
@@ -626,13 +897,26 @@
       scrollToBottom();
     }
 
-    function showTyping() {
-      const wrapper = document.createElement("div");
+    function showTyping(label = "AI 回覆中") {
+      hideTyping();
+
+      const wrapper =
+        document.createElement("div");
+
       wrapper.id = "typingMessage";
-      wrapper.className = "message assistant";
+      wrapper.className =
+        "message assistant";
+
       wrapper.innerHTML = `
         <div class="bubble">
-          <span class="typing" aria-label="AI 回覆中">
+          <div class="message-meta">
+            ${escapeHtml(label)}
+          </div>
+
+          <span
+            class="typing"
+            aria-label="${escapeHtml(label)}"
+          >
             <span></span>
             <span></span>
             <span></span>
@@ -645,21 +929,139 @@
     }
 
     function hideTyping() {
-      document.querySelector("#typingMessage")?.remove();
+      document
+        .querySelector("#typingMessage")
+        ?.remove();
+    }
+
+    function updateControls() {
+      messageInput.disabled =
+        isSending || isRecording;
+
+      sendButton.disabled =
+        isSending || isRecording;
+
+      voiceButton.disabled =
+        isSending;
+
+      resetButton.disabled =
+        isSending || isRecording;
+
+      apiUrlInput.disabled =
+        isSending || isRecording;
+
+      if (isSending) {
+        sendButton.textContent = "傳送中";
+      } else {
+        sendButton.textContent = "送出";
+      }
+
+      voiceButton.classList.toggle(
+        "recording",
+        isRecording
+      );
+
+      recordingStatus.classList.toggle(
+        "visible",
+        isRecording
+      );
+
+      voiceButton.textContent =
+        isRecording ? "⏹️" : "🎙️";
+
+      voiceButton.setAttribute(
+        "aria-label",
+        isRecording ? "停止錄音" : "開始錄音"
+      );
+
+      voiceButton.title =
+        isRecording ? "停止錄音" : "開始錄音";
     }
 
     function setSending(sending) {
       isSending = sending;
-      sendButton.disabled = sending;
-      messageInput.disabled = sending;
-      sendButton.textContent = sending ? "傳送中" : "送出";
+      updateControls();
     }
 
-    async function sendMessage(message) {
-      const apiUrl = apiUrlInput.value.trim();
+    function getTextApiUrl() {
+      return apiUrlInput.value
+        .trim()
+        .replace(/\/+$/, "");
+    }
+
+    function getVoiceApiUrl() {
+      return `${getTextApiUrl()}/voice`;
+    }
+
+    function getErrorMessage(
+      response,
+      data
+    ) {
+      return (
+        data?.detail?.message ||
+        data?.error?.message ||
+        data?.message ||
+        `HTTP ${response.status} ${response.statusText}`
+      );
+    }
+
+    async function readJsonResponse(response) {
+      const responseText =
+        await response.text();
+
+      if (!responseText) {
+        return {};
+      }
+
+      try {
+        return JSON.parse(responseText);
+      } catch {
+        return {
+          message: responseText
+        };
+      }
+    }
+
+    function saveSession(data) {
+      if (!data.session_id) {
+        return;
+      }
+
+      sessionId = data.session_id;
+
+      localStorage.setItem(
+        "racketChatSessionId",
+        sessionId
+      );
+    }
+
+    function handleRequestError(error) {
+      const message =
+        error instanceof TypeError
+          ? (
+            "無法連線至 API。請確認後端已啟動，" +
+            "並檢查 API 網址與 CORS 設定。"
+          )
+          : error.message;
+
+      addErrorMessage(
+        message,
+        error.cause
+      );
+
+      setConnectionState(
+        "error",
+        "API 連線失敗"
+      );
+    }
+
+    async function sendTextMessage(message) {
+      const apiUrl = getTextApiUrl();
 
       if (!apiUrl) {
-        addErrorMessage("請先輸入 API 網址。");
+        addErrorMessage(
+          "請先輸入文字聊天 API 網址。"
+        );
         return;
       }
 
@@ -671,121 +1073,587 @@
         payload.session_id = sessionId;
       }
 
+      addUserMessage(message, "text");
       setSending(true);
-      setConnectionState("", "正在連線至 API……");
-      showTyping();
+
+      setConnectionState(
+        "",
+        "正在傳送文字訊息……"
+      );
+
+      showTyping("AI 回覆中");
 
       try {
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
+        const response = await fetch(
+          apiUrl,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify(payload)
+          }
+        );
 
-        const responseText = await response.text();
-
-        let data;
-
-        try {
-          data = responseText ? JSON.parse(responseText) : {};
-        } catch {
-          data = {
-            message: responseText
-          };
-        }
+        const data =
+          await readJsonResponse(response);
 
         if (!response.ok) {
-          const errorMessage =
-            data?.detail?.message ||
-            data?.message ||
-            `HTTP ${response.status} ${response.statusText}`;
-
-          throw new Error(errorMessage, {
-            cause: JSON.stringify(data, null, 2)
-          });
+          throw new Error(
+            getErrorMessage(response, data),
+            {
+              cause: JSON.stringify(
+                data,
+                null,
+                2
+              )
+            }
+          );
         }
 
-        if (data.session_id) {
-          sessionId = data.session_id;
-          localStorage.setItem("racketChatSessionId", sessionId);
-        }
+        saveSession(data);
 
         hideTyping();
         addAssistantMessage(data);
-        setConnectionState("online", `API 連線成功 · Session：${sessionId}`);
+
+        setConnectionState(
+          "online",
+          `文字 API 連線成功 · Session：${sessionId}`
+        );
       } catch (error) {
         hideTyping();
-
-        const message =
-          error instanceof TypeError
-            ? "無法連線至 API。請確認後端已啟動，並檢查瀏覽器的 CORS 設定。"
-            : error.message;
-
-        addErrorMessage(message, error.cause);
-        setConnectionState("error", "API 連線失敗");
+        handleRequestError(error);
       } finally {
         setSending(false);
         messageInput.focus();
       }
     }
 
-    chatForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
+    async function sendVoiceMessage(
+      audioBlob,
+      mimeType
+    ) {
+      const voiceApiUrl =
+        getVoiceApiUrl();
 
-      const message = messageInput.value.trim();
-
-      if (!message || isSending) {
+      if (!getTextApiUrl()) {
+        addErrorMessage(
+          "請先輸入文字聊天 API 網址。"
+        );
         return;
       }
 
-      addUserMessage(message);
-      messageInput.value = "";
-      messageInput.style.height = "auto";
-
-      await sendMessage(message);
-    });
-
-    messageInput.addEventListener("keydown", (event) => {
-      if (
-        event.key === "Enter" &&
-        !event.shiftKey &&
-        !event.isComposing
-      ) {
-        event.preventDefault();
-        chatForm.requestSubmit();
+      if (!audioBlob.size) {
+        addErrorMessage(
+          "沒有錄製到任何聲音，請重新錄音。"
+        );
+        return;
       }
-    });
 
-    messageInput.addEventListener("input", () => {
-      messageInput.style.height = "auto";
-      messageInput.style.height =
-        `${Math.min(messageInput.scrollHeight, 150)}px`;
-    });
+      const formData =
+        new FormData();
 
-    resetButton.addEventListener("click", () => {
+      const extension =
+        getAudioExtension(mimeType);
+
+      formData.append(
+        "audio",
+        audioBlob,
+        `voice-message.${extension}`
+      );
+
+      if (sessionId) {
+        formData.append(
+          "session_id",
+          sessionId
+        );
+      }
+
+      setSending(true);
+
+      setConnectionState(
+        "",
+        "正在辨識語音並取得推薦……"
+      );
+
+      showTyping("語音辨識與 AI 回覆中");
+
+      try {
+        const response = await fetch(
+          voiceApiUrl,
+          {
+            method: "POST",
+            headers: {
+              "Accept": "application/json"
+            },
+            body: formData
+          }
+        );
+
+        const data =
+          await readJsonResponse(response);
+
+        if (!response.ok) {
+          throw new Error(
+            getErrorMessage(response, data),
+            {
+              cause: JSON.stringify(
+                data,
+                null,
+                2
+              )
+            }
+          );
+        }
+
+        saveSession(data);
+        hideTyping();
+
+        addUserMessage(
+          data.transcript ||
+            "語音訊息",
+          "voice"
+        );
+
+        addAssistantMessage(data);
+
+        setConnectionState(
+          "online",
+          `語音 API 連線成功 · Session：${sessionId}`
+        );
+      } catch (error) {
+        hideTyping();
+        handleRequestError(error);
+      } finally {
+        setSending(false);
+        messageInput.focus();
+      }
+    }
+
+    function getSupportedMimeType() {
+      const candidates = [
+        "audio/webm;codecs=opus",
+        "audio/webm",
+        "audio/mp4",
+        "audio/ogg;codecs=opus",
+        "audio/ogg"
+      ];
+
+      return (
+        candidates.find((mimeType) => (
+          MediaRecorder.isTypeSupported(
+            mimeType
+          )
+        )) || ""
+      );
+    }
+
+    function normalizeMimeType(mimeType) {
+      return String(mimeType || "")
+        .split(";")[0]
+        .trim()
+        .toLowerCase();
+    }
+
+    function getAudioExtension(mimeType) {
+      const normalized =
+        normalizeMimeType(mimeType);
+
+      const extensions = {
+        "audio/webm": "webm",
+        "audio/mp4": "m4a",
+        "audio/mpeg": "mp3",
+        "audio/mp3": "mp3",
+        "audio/ogg": "ogg",
+        "audio/wav": "wav",
+        "audio/x-wav": "wav",
+        "audio/flac": "flac",
+        "audio/x-flac": "flac"
+      };
+
+      return extensions[normalized] || "webm";
+    }
+
+    function updateRecordingTime() {
+      if (!recordingStartedAt) {
+        recordingTime.textContent = "00:00";
+        return;
+      }
+
+      const elapsedSeconds =
+        Math.floor(
+          (
+            Date.now() -
+            recordingStartedAt
+          ) / 1000
+        );
+
+      const minutes =
+        Math.floor(elapsedSeconds / 60);
+
+      const seconds =
+        elapsedSeconds % 60;
+
+      recordingTime.textContent =
+        `${String(minutes).padStart(2, "0")}:` +
+        `${String(seconds).padStart(2, "0")}`;
+    }
+
+    function startRecordingTimer() {
+      recordingStartedAt = Date.now();
+      updateRecordingTime();
+
+      recordingTimerId = window.setInterval(
+        updateRecordingTime,
+        500
+      );
+    }
+
+    function stopRecordingTimer() {
+      if (recordingTimerId !== null) {
+        window.clearInterval(
+          recordingTimerId
+        );
+      }
+
+      recordingTimerId = null;
+      recordingStartedAt = null;
+      recordingTime.textContent = "00:00";
+    }
+
+    function releaseMicrophone() {
+      if (!microphoneStream) {
+        return;
+      }
+
+      microphoneStream
+        .getTracks()
+        .forEach((track) => track.stop());
+
+      microphoneStream = null;
+    }
+
+    async function startRecording() {
+      if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        addErrorMessage(
+          "此瀏覽器不支援麥克風錄音。請使用新版 Chrome、Edge、Firefox 或 Safari。"
+        );
+        return;
+      }
+
+      if (!window.MediaRecorder) {
+        addErrorMessage(
+          "此瀏覽器不支援 MediaRecorder，無法錄製語音。"
+        );
+        return;
+      }
+
+      try {
+        microphoneStream =
+          await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
+
+        const preferredMimeType =
+          getSupportedMimeType();
+
+        const recorderOptions =
+          preferredMimeType
+            ? {
+              mimeType: preferredMimeType
+            }
+            : undefined;
+
+        mediaRecorder =
+          new MediaRecorder(
+            microphoneStream,
+            recorderOptions
+          );
+
+        audioChunks = [];
+
+        mediaRecorder.addEventListener(
+          "dataavailable",
+          (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          }
+        );
+
+        mediaRecorder.addEventListener(
+          "stop",
+          async () => {
+            const mimeType =
+              normalizeMimeType(
+                mediaRecorder.mimeType ||
+                preferredMimeType ||
+                audioChunks[0]?.type ||
+                "audio/webm"
+              );
+
+            const audioBlob =
+              new Blob(
+                audioChunks,
+                {
+                  type: mimeType
+                }
+              );
+
+            audioChunks = [];
+            mediaRecorder = null;
+
+            releaseMicrophone();
+
+            await sendVoiceMessage(
+              audioBlob,
+              mimeType
+            );
+          },
+          {
+            once: true
+          }
+        );
+
+        mediaRecorder.addEventListener(
+          "error",
+          (event) => {
+            isRecording = false;
+            stopRecordingTimer();
+            releaseMicrophone();
+            updateControls();
+
+            addErrorMessage(
+              "錄音時發生錯誤，請重新嘗試。",
+              event.error?.message
+            );
+
+            setConnectionState(
+              "error",
+              "錄音失敗"
+            );
+          },
+          {
+            once: true
+          }
+        );
+
+        mediaRecorder.start(250);
+
+        isRecording = true;
+        startRecordingTimer();
+        updateControls();
+
+        setConnectionState(
+          "recording",
+          "正在錄音……再次按下麥克風即可停止並送出"
+        );
+      } catch (error) {
+        releaseMicrophone();
+
+        let message =
+          "無法使用麥克風，請檢查瀏覽器權限。";
+
+        if (error.name === "NotAllowedError") {
+          message =
+            "麥克風權限遭到拒絕。請在瀏覽器網址列的網站權限中允許使用麥克風。";
+        } else if (
+          error.name === "NotFoundError"
+        ) {
+          message =
+            "找不到可使用的麥克風裝置。";
+        } else if (
+          error.name === "NotReadableError"
+        ) {
+          message =
+            "麥克風可能正在被其他程式使用。";
+        } else if (
+          error.name === "SecurityError"
+        ) {
+          message =
+            "瀏覽器基於安全性拒絕麥克風存取。請透過 localhost 或 HTTPS 開啟頁面。";
+        }
+
+        addErrorMessage(
+          message,
+          error.message
+        );
+
+        setConnectionState(
+          "error",
+          "無法使用麥克風"
+        );
+      }
+    }
+
+    function stopRecording() {
+      if (
+        !mediaRecorder ||
+        mediaRecorder.state === "inactive"
+      ) {
+        return;
+      }
+
+      isRecording = false;
+      stopRecordingTimer();
+      updateControls();
+
+      setConnectionState(
+        "",
+        "錄音完成，正在準備上傳……"
+      );
+
+      mediaRecorder.stop();
+    }
+
+    async function toggleRecording() {
+      if (isSending) {
+        return;
+      }
+
+      if (isRecording) {
+        stopRecording();
+        return;
+      }
+
+      await startRecording();
+    }
+
+    function resetConversation() {
       sessionId = null;
-      localStorage.removeItem("racketChatSessionId");
+
+      localStorage.removeItem(
+        "racketChatSessionId"
+      );
 
       messagesElement.innerHTML = `
         <div class="message assistant">
           <div class="bubble">
-            <div class="message-meta">AI 助手</div>
-            新的對話已開始。請告訴我你想找什麼樣的羽球拍！
+            <div class="message-meta">
+              AI 助手
+            </div>
+
+            新的對話已開始。你可以輸入文字，或按麥克風告訴我想找什麼樣的羽球拍！
           </div>
         </div>
       `;
 
-      setConnectionState("", "對話已重設");
-      messageInput.focus();
-    });
+      messageInput.value = "";
+      messageInput.style.height = "auto";
 
-    if (sessionId) {
-      setConnectionState("", `已載入 Session：${sessionId}`);
+      setConnectionState(
+        "",
+        "對話已重設"
+      );
+
+      messageInput.focus();
     }
 
+    chatForm.addEventListener(
+      "submit",
+      async (event) => {
+        event.preventDefault();
+
+        const message =
+          messageInput.value.trim();
+
+        if (
+          !message ||
+          isSending ||
+          isRecording
+        ) {
+          return;
+        }
+
+        messageInput.value = "";
+        messageInput.style.height = "auto";
+
+        await sendTextMessage(message);
+      }
+    );
+
+    voiceButton.addEventListener(
+      "click",
+      toggleRecording
+    );
+
+    messageInput.addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key === "Enter" &&
+          !event.shiftKey &&
+          !event.isComposing
+        ) {
+          event.preventDefault();
+          chatForm.requestSubmit();
+        }
+      }
+    );
+
+    messageInput.addEventListener(
+      "input",
+      () => {
+        messageInput.style.height =
+          "auto";
+
+        messageInput.style.height =
+          `${
+            Math.min(
+              messageInput.scrollHeight,
+              150
+            )
+          }px`;
+      }
+    );
+
+    resetButton.addEventListener(
+      "click",
+      resetConversation
+    );
+
+    window.addEventListener(
+      "beforeunload",
+      () => {
+        if (
+          mediaRecorder &&
+          mediaRecorder.state !== "inactive"
+        ) {
+          mediaRecorder.stop();
+        }
+
+        releaseMicrophone();
+      }
+    );
+
+    if (
+      !navigator.mediaDevices ||
+      !window.MediaRecorder
+    ) {
+      voiceButton.disabled = true;
+      voiceButton.title =
+        "目前瀏覽器不支援錄音";
+
+      inputHelp.textContent =
+        "目前瀏覽器不支援錄音，仍可使用文字輸入";
+    }
+
+    if (sessionId) {
+      setConnectionState(
+        "",
+        `已載入 Session：${sessionId}`
+      );
+    }
+
+    updateControls();
     messageInput.focus();
   </script>
 </body>
