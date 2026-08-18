@@ -17,6 +17,10 @@ from app.services.recommendation_service import (
 )
 
 
+def get_gemini_service() -> GeminiService:
+    return GeminiService()
+
+
 def get_recommendation_service(
     db: Session = Depends(get_db),
 ) -> RecommendationService:
@@ -52,3 +56,7 @@ def get_racket_chat_service(
 
 def get_racket_candidate_limit() -> int:
     return get_settings().racket_candidate_limit
+
+
+def get_voice_audio_max_bytes() -> int:
+    return get_settings().voice_audio_max_bytes

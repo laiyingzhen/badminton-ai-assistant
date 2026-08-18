@@ -28,6 +28,7 @@ class ChatRequest(BaseModel):
         ),
     )
 
+
 class ExtractedRacketCriteria(BaseModel):
     playing_style: RacketPlayingStyle | None = None
     brand: RacketBrand | None = None
@@ -37,6 +38,7 @@ class ExtractedRacketCriteria(BaseModel):
         default=None,
         gt=0,
     )
+
 
 class CriteriaExtractionResult(BaseModel):
     playing_style: RacketPlayingStyle | None = None
@@ -67,15 +69,23 @@ class ChatGuidanceResult(BaseModel):
 
 class ChatResponse(BaseModel):
     session_id: UUID
+
     status: Literal[
         "collecting",
         "recommended",
         "no_match",
     ]
+
     message: str
     criteria: ExtractedRacketCriteria
     missing_fields: list[str]
     recommendation: RacketCandidate | None = None
+
+
+class VoiceChatResponse(ChatResponse):
+    transcript: str = Field(
+        description="由使用者音訊辨識出的文字。",
+    )
 
 
 class ChatMessageResponse(BaseModel):

@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # Recommendation
     racket_candidate_limit: int = 3
 
+    # Voice input
+    voice_audio_max_bytes: int = 10 * 1024 * 1024
+
     # Google Cloud / Vertex AI
     google_cloud_project: str
     google_cloud_location: str = "global"
