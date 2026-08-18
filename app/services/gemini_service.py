@@ -15,6 +15,25 @@ from app.exceptions.recommendation import GeminiServiceError
 logger = logging.getLogger(__name__)
 
 
+BADMINTON_TRANSCRIPTION_PROMPT = """
+你是專門處理羽球器材推薦對話的繁體中文語音辨識員。
+
+請將音訊完整轉錄成文字，並依照羽球語境校正發音相近的誤辨詞。
+優先考慮羽球常用詞彙，例如：羽球、球拍、拍框、拍桿、拍線、磅數、
+殺球、重殺、暴力殺、扣殺、吊球、切球、挑球、平抽擋、網前、後場、
+進攻、防守、速度、控球、頭重、頭輕、平衡點、中桿、硬度、預算、
+初階、中階、進階，以及 Yonex、Victor、Li-Ning 等品牌名稱。
+
+校正原則：
+1. 若同音或近音內容在羽球語境下有明確詞彙，請使用羽球用字。
+   例如：「沙丘」應辨識為「殺球」，「暴力沙」應辨識為「暴力殺」。
+2. 保留說話者原意、語氣、數字、品牌與型號，不要摘要或自行補充需求。
+3. 無法由上下文確認的內容，保留最接近原始發音的文字，不要臆測。
+4. 保留說話者原本使用的語言；中文一律使用繁體中文。
+5. 只輸出校正後的逐字稿，不要加入標題、說明、Markdown 或引號。
+""".strip()
+
+
 class GeminiService:
 
     def __init__(self):
@@ -109,13 +128,7 @@ class GeminiService:
                         data=audio_data,
                         mime_type=mime_type,
                     ),
-                    (
-                        "請將這段音訊完整轉錄成文字。"
-                        "保留說話者原本使用的語言；"
-                        "若內容是中文，請使用繁體中文。"
-                        "只輸出逐字稿，不要加入說明、標題、"
-                        "Markdown 或額外評論。"
-                    ),
+                    BADMINTON_TRANSCRIPTION_PROMPT,
                 ],
                 config=GenerateContentConfig(
                     temperature=0,
