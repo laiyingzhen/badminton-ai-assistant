@@ -9,6 +9,7 @@ from app.services.chat_prompt import ChatPromptBuilder
 from app.services.chat_service import RacketChatService
 from app.services.embedding_service import EmbeddingService
 from app.services.gemini_service import GeminiService
+from app.services.racket_service import RacketService
 from app.services.recommendation_prompt import (
     RecommendationPromptBuilder,
 )
@@ -29,6 +30,14 @@ def get_recommendation_service(
         racket_repository=RacketRepository(db),
         gemini_service=GeminiService(),
         prompt_builder=RecommendationPromptBuilder(),
+    )
+
+
+def get_racket_service(
+    db: Session = Depends(get_db),
+) -> RacketService:
+    return RacketService(
+        racket_repository=RacketRepository(db),
     )
 
 

@@ -61,20 +61,20 @@ class Racket(Base):
         nullable=True,
     )
 
+    image_url: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    affiliate_url: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )    
+
     embedding: Mapped[list[float] | None] = mapped_column(
         VECTOR(768),
         nullable=True,
     )
-
-    # embedding_text: Mapped[str | None] = mapped_column(
-    #     Text,
-    #     nullable=True,
-    # )
-
-    # embedding_model: Mapped[str | None] = mapped_column(
-    #     String(100),
-    #     nullable=True,
-    # )
 
     is_active: Mapped[bool] = mapped_column(
         Boolean,
@@ -89,7 +89,7 @@ class Racket(Base):
 價格：NT$ {self.price}
 重量：{self.weight}
 平衡：{self.balance}
-硬度：{self.flexibility}
+中桿軟硬度：{self.flexibility}
 適合程度：{self.suitable_level}
 適合打法：{self.playing_style}
 產品描述：{self.description}

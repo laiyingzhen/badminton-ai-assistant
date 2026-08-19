@@ -113,3 +113,39 @@ class RacketRepository:
             raise DatabaseServiceError(
                 "Unable to search racket database."
             ) from exc
+
+    def find_by_query_conditions(
+        self,
+        budget: Decimal,
+        playing_style: str,
+        brand: str | None = None,
+    ) -> list[Racket]:
+        try:
+            query = self.db.query(Racket).filter(
+                Racket.is_active.is_(True),
+                Racket.price <= budget,
+                Racket.playing_style == playing_style,
+            )
+
+            if brand is not None:
+                query = query.filter(
+                    Racket.brand.ilike(brand)
+                )
+
+            return (
+                query
+                .order_by(
+                    Racket.price.asc(),
+                    Racket.id.asc(),
+                )
+                .all()
+            )
+
+        except SQLAlchemyError as exc:
+            logger.exception(
+                "Database query failed while querying rackets."
+            )
+
+            raise DatabaseServiceError(
+                "Unable to query racket database."
+            ) from exc
