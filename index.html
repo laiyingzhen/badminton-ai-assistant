@@ -959,6 +959,7 @@
             isSendingChat = true;
             setBusy(sendBtn, true);
             setBusy(voiceBtn, true);
+            addAssistantMessage("正在搜尋推薦資料，請稍後...");
 
             try {
                 const sessionId = getSessionId();
