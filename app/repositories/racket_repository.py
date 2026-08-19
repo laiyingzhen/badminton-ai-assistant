@@ -118,8 +118,10 @@ class RacketRepository:
         self,
         budget: Decimal,
         playing_style: str,
+        page: int,
+        page_size: int,
         brand: str | None = None,
-    ) -> list[Racket]:
+    ) -> tuple[list[Racket], int]:
         try:
             query = self.db.query(Racket).filter(
                 Racket.is_active.is_(True),
@@ -132,14 +134,21 @@ class RacketRepository:
                     Racket.brand.ilike(brand)
                 )
 
-            return (
+            total_items = query.count()
+            offset = (page - 1) * page_size
+
+            rackets = (
                 query
                 .order_by(
                     Racket.price.asc(),
                     Racket.id.asc(),
                 )
+                .offset(offset)
+                .limit(page_size)
                 .all()
             )
+
+            return rackets, total_items
 
         except SQLAlchemyError as exc:
             logger.exception(

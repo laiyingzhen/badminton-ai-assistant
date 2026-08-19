@@ -1,7 +1,7 @@
 from decimal import Decimal
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 RacketPlayingStyle = Literal[
@@ -33,3 +33,17 @@ class RacketQueryResponse(BaseModel):
     image_url: str | None
     affiliate_url: str | None
     is_active: bool
+
+
+class RacketPaginationResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    page: int
+    page_size: int = Field(serialization_alias="pageSize")
+    total_items: int = Field(serialization_alias="totalItems")
+    total_pages: int = Field(serialization_alias="totalPages")
+
+
+class RacketListResponse(BaseModel):
+    data: list[RacketQueryResponse]
+    pagination: RacketPaginationResponse

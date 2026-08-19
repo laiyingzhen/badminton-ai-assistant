@@ -16,10 +16,14 @@ class RacketService:
         self,
         budget: Decimal,
         playing_style: str,
+        page: int,
+        page_size: int,
         brand: str | None = None,
-    ) -> list[Racket]:
+    ) -> tuple[list[Racket], int]:
         return self.racket_repository.find_by_query_conditions(
             budget=budget,
             playing_style=playing_style,
             brand=brand,
+            page=page,
+            page_size=page_size,
         )
