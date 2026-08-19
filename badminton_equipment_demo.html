@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>羽球裝備推薦</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+    >
+
+    <style>
+        body {
+            background: #e6ebe2;
+            color: #263728;
+            font-family: "Noto Sans TC", sans-serif;
+        }
+
+        .thick-border {
+            border: 2px solid #263728;
+        }
+
+        .filter-btn {
+            border: 1px solid #263728;
+            background: white;
+            color: #263728;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .filter-btn.active {
+            border-color: #263728;
+            background: #263728;
+            color: white;
+        }
+
+        .filter-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            background: rgba(38, 55, 40, 0.25);
+        }
+
+        .recording {
+            color: #dc2626 !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: 0.45;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen pb-24">
+    <header
+        class="sticky top-0 z-30 border-b border-[#c8d4c4]
+               bg-[#e6ebe2] px-4 py-3 md:px-8"
+    >
+        <div
+            class="mx-auto flex max-w-6xl items-center justify-between"
+        >
+            <div class="flex items-center gap-5">
+                <a href="#" class="flex items-center gap-2">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center
+                               rounded-full bg-[#3b533e] text-xl text-white"
+                    >
+                        🏸
+                    </span>
+                </a>
+
+                <nav
+                    class="hidden items-center gap-1 text-sm font-bold md:flex"
+                >
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        首頁
+                    </a>
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        打球+1
+                    </a>
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        開團+1
+                    </a>
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        能力+1
+                    </a>
+                    <a
+                        class="rounded-full bg-[#263728] px-3 py-1.5
+                               text-white"
+                        href="#"
+                    >
+                        裝備+1
+                    </a>
+                </nav>
+            </div>
+
+            <button
+                class="rounded-full bg-white px-4 py-1.5
+                       text-sm font-bold thick-border"
+            >
+                <i class="fa-solid fa-user mr-2"></i>
+                登入
+            </button>
+        </div>
+    </header>
+
+    <main class="mx-auto mt-6 w-full max-w-6xl px-4 md:px-8">
+        <section
+            class="mb-8 rounded-3xl bg-white p-5 shadow-sm
+                   thick-border md:p-7"
+        >
+            <div class="space-y-5">
+                <div
+                    class="flex flex-col gap-3 border-b border-gray-100
+                           pb-4 sm:flex-row sm:items-center"
+                >
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        打法
+                        <span class="text-xs font-normal text-red-500">
+                            必填
+                        </span>
+                    </div>
+
+                    <div
+                        id="style-filters"
+                        class="flex flex-wrap gap-2 text-sm font-medium"
+                    >
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="style"
+                            data-value="offensive"
+                        >
+                            進攻型
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="style"
+                            data-value="defensive"
+                        >
+                            防守型
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="style"
+                            data-value="all_round"
+                        >
+                            全能型
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col gap-3 border-b border-gray-100
+                           pb-4 sm:flex-row sm:items-center"
+                >
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        預算
+                        <span class="text-xs font-normal text-red-500">
+                            必填
+                        </span>
+                    </div>
+
+                    <div
+                        id="budget-filters"
+                        class="flex flex-wrap gap-2 text-sm font-medium"
+                    >
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="3000"
+                        >
+                            3,000 以下
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="5000"
+                        >
+                            5,000 以下
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="7000"
+                        >
+                            7,000 以下
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="1000000"
+                        >
+                            不限
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col gap-3 border-b border-gray-100
+                           pb-4 sm:flex-row sm:items-center"
+                >
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        品牌
+                        <span class="text-xs font-normal text-gray-500">
+                            選填
+                        </span>
+                    </div>
+
+                    <div
+                        id="brand-filters"
+                        class="flex flex-wrap gap-2 text-sm font-medium"
+                    >
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value=""
+                        >
+                            不限
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="YONEX"
+                        >
+                            YONEX
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="VICTOR"
+                        >
+                            VICTOR
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="LI-NING"
+                        >
+                            LI-NING
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="JNICE"
+                        >
+                            JNICE
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        已選條件
+                    </div>
+                    <div
+                        id="selected-tags"
+                        class="flex flex-wrap gap-2 text-xs font-bold"
+                    ></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="mb-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-extrabold">推薦結果</h2>
+                <p
+                    id="result-count-text"
+                    class="text-xs font-medium text-gray-600"
+                >
+                    請選擇打法與預算。
+                </p>
+            </div>
+
+            <button
+                id="clear-all-btn"
+                class="rounded-xl bg-white px-4 py-1.5
+                       text-xs font-bold shadow-sm thick-border"
+            >
+                清除條件
+            </button>
+        </div>
+
+        <div
+            id="equipment-grid"
+            class="grid grid-cols-1 gap-6 md:grid-cols-2"
+        ></div>
+    </main>
+
+    <div
+        class="fixed bottom-5 right-5 z-50 flex flex-col items-end"
+    >
+        <div
+            id="chat-window"
+            class="mb-3 w-[340px] origin-bottom-right overflow-hidden
+                   rounded-2xl bg-white shadow-2xl transition
+                   thick-border sm:w-[380px]"
+        >
+            <div
+                class="flex items-center justify-between border-b-2
+                       border-[#263728] bg-[#e2b342] px-4 py-3"
+            >
+                <div class="flex items-center gap-2">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center
+                               rounded-full border border-[#263728]
+                               bg-white text-lg"
+                    >
+                        🦆
+                    </span>
+                    <span class="text-sm font-extrabold">
+                        鵝助手
+                    </span>
+                </div>
+
+                <div class="flex items-center">
+                    <button
+                        id="new-chat-btn"
+                        class="px-2 text-xs font-bold"
+                        title="重新對話"
+                    >
+                        重新對話
+                    </button>
+                    <button
+                        id="close-chat-btn"
+                        class="px-2 text-base"
+                        title="關閉"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div
+                id="chat-messages"
+                class="chat-scroll min-h-[220px] max-h-[360px]
+                       space-y-3 overflow-y-auto bg-[#fcfdfa] p-4"
+            >
+                <div class="flex items-start">
+                    <div
+                        class="max-w-[88%] rounded-2xl border
+                               border-gray-300 bg-gray-100 p-3
+                               text-xs leading-relaxed shadow-sm"
+                    >
+                        嗨，我是鵝助手。請告訴我你的程度、打法、
+                        預算及偏好的品牌，我會推薦適合的羽球拍。
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 bg-white p-3">
+                <form
+                    id="chat-form"
+                    class="flex items-center gap-2"
+                >
+                    <input
+                        id="chat-input"
+                        type="text"
+                        maxlength="2000"
+                        autocomplete="off"
+                        placeholder="說或打字..."
+                        class="min-w-0 flex-1 rounded-full border
+                               border-gray-300 bg-gray-50 px-3.5
+                               py-1.5 text-xs outline-none"
+                    >
+
+                    <button
+                        id="voice-btn"
+                        type="button"
+                        class="p-1 text-sm text-gray-500"
+                        title="開始錄音"
+                    >
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+
+                    <button
+                        id="send-btn"
+                        type="submit"
+                        class="flex h-7 w-7 items-center justify-center
+                               rounded-full bg-[#263728] text-xs text-white"
+                    >
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <button
+            id="toggle-chat-btn"
+            class="flex h-12 w-12 items-center justify-center
+                   rounded-full border-2 border-[#263728]
+                   bg-[#e2b342] text-xl shadow-lg"
+        >
+            <i class="fa-solid fa-clipboard"></i>
+        </button>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000";
+        const CHAT_PATH =
+            "/api/v1/recommendations/rackets/chat";
+        const RACKETS_PATH = "/api/v1/rackets";
+        const SESSION_STORAGE_KEY =
+            "badmintonRacketChatSessionId";
+
+        const styleLabels = {
+            offensive: "進攻型",
+            defensive: "防守型",
+            all_round: "全能型"
+        };
+
+        const balanceLabels = {
+            head_heavy: "頭重",
+            even: "平衡",
+            head_light: "頭輕"
+        };
+
+        const flexibilityLabels = {
+            stiff: "硬",
+            medium: "適中",
+            flexible: "軟"
+        };
+
+        let currentFilters = {
+            style: "",
+            budget: "",
+            brand: ""
+        };
+
+        let rackets = [];
+        let isLoadingRackets = false;
+        let isSendingChat = false;
+        let mediaRecorder = null;
+        let recordingStream = null;
+        let audioChunks = [];
+
+        const gridContainer =
+            document.getElementById("equipment-grid");
+        const selectedTagsContainer =
+            document.getElementById("selected-tags");
+        const resultCountText =
+            document.getElementById("result-count-text");
+        const clearAllBtn =
+            document.getElementById("clear-all-btn");
+        const toggleChatBtn =
+            document.getElementById("toggle-chat-btn");
+        const closeChatBtn =
+            document.getElementById("close-chat-btn");
+        const newChatBtn =
+            document.getElementById("new-chat-btn");
+        const chatWindow =
+            document.getElementById("chat-window");
+        const chatForm =
+            document.getElementById("chat-form");
+        const chatInput =
+            document.getElementById("chat-input");
+        const chatMessages =
+            document.getElementById("chat-messages");
+        const voiceBtn =
+            document.getElementById("voice-btn");
+        const sendBtn =
+            document.getElementById("send-btn");
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
+        }
+
+        function getApiError(data, status) {
+            return (
+                data?.error?.message ||
+                data?.detail?.message ||
+                data?.detail ||
+                `API 請求失敗（HTTP ${status}）`
+            );
+        }
+
+        async function apiFetch(path, options = {}) {
+            const response = await fetch(
+                `${API_BASE_URL}${path}`,
+                options
+            );
+
+            const data = await response
+                .json()
+                .catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(
+                    getApiError(data, response.status)
+                );
+            }
+
+            return data;
+        }
+
+        function formatPrice(value) {
+            return Number(value).toLocaleString("zh-TW", {
+                maximumFractionDigits: 0
+            });
+        }
+
+        function setBusy(element, busy) {
+            element.disabled = busy;
+            element.classList.toggle("opacity-50", busy);
+            element.classList.toggle(
+                "cursor-not-allowed",
+                busy
+            );
+        }
+
+        function updateButtonActiveStates() {
+            document
+                .querySelectorAll(".filter-btn")
+                .forEach((button) => {
+                    const type = button.dataset.type;
+                    const value = button.dataset.value;
+                    button.classList.toggle(
+                        "active",
+                        currentFilters[type] === value
+                    );
+                });
+        }
+
+        function createTag(text) {
+            const tag = document.createElement("span");
+            tag.className =
+                "rounded-full bg-[#263728] px-3 py-1 text-white";
+            tag.textContent = text;
+            selectedTagsContainer.appendChild(tag);
+        }
+
+        function renderSelectedTags() {
+            selectedTagsContainer.innerHTML = "";
+
+            if (currentFilters.style) {
+                createTag(
+                    `打法：${styleLabels[currentFilters.style]}`
+                );
+            }
+
+            if (currentFilters.budget) {
+                const budget =
+                    Number(currentFilters.budget) >= 1000000
+                        ? "不限"
+                        : `${formatPrice(
+                            currentFilters.budget
+                        )} 以下`;
+
+                createTag(`預算：${budget}`);
+            }
+
+            if (currentFilters.brand) {
+                createTag(`品牌：${currentFilters.brand}`);
+            }
+
+            if (
+                !currentFilters.style &&
+                !currentFilters.budget &&
+                !currentFilters.brand
+            ) {
+                const empty = document.createElement("span");
+                empty.className = "font-normal text-gray-400";
+                empty.textContent = "尚未選擇";
+                selectedTagsContainer.appendChild(empty);
+            }
+        }
+
+        function emptyResult(icon, title, message) {
+            gridContainer.innerHTML = `
+                <div class="col-span-full rounded-2xl bg-white
+                            py-12 text-center text-gray-500
+                            thick-border">
+                    <i class="fa-solid ${icon}
+                              mb-3 text-4xl text-gray-400"></i>
+                    <p class="font-bold">${escapeHtml(title)}</p>
+                    <p class="mt-1 text-xs text-gray-400">
+                        ${escapeHtml(message)}
+                    </p>
+                </div>
+            `;
+        }
+
+        function renderRackets() {
+            gridContainer.innerHTML = "";
+
+            if (isLoadingRackets) {
+                resultCountText.textContent = "正在查詢球拍資料...";
+                emptyResult(
+                    "fa-spinner fa-spin",
+                    "資料載入中",
+                    "請稍候。"
+                );
+                return;
+            }
+
+            if (!rackets.length) {
+                resultCountText.textContent =
+                    "依目前條件找不到球拍。";
+                emptyResult(
+                    "fa-ghost",
+                    "找不到符合條件的球拍",
+                    "請調整篩選條件後再試一次。"
+                );
+                return;
+            }
+
+            resultCountText.textContent =
+                `依你的條件找到 ${rackets.length} 支球拍。`;
+
+            rackets.forEach((racket) => {
+                const card = document.createElement("article");
+                card.className =
+                    "relative flex flex-col justify-between " +
+                    "rounded-2xl bg-white p-5 shadow-sm " +
+                    "transition hover:shadow-md thick-border";
+
+                const image = racket.image_url
+                    ? `
+                        <img
+                            src="${escapeHtml(racket.image_url)}"
+                            alt="${escapeHtml(
+                                `${racket.brand} ${racket.model}`
+                            )}"
+                            class="h-full w-full object-contain"
+                        >
+                    `
+                    : `
+                        <div class="text-6xl" aria-hidden="true">
+                            🏸
+                        </div>
+                    `;
+
+                const affiliateLink = racket.affiliate_url
+                    ? `
+                        <a
+                            href="${escapeHtml(
+                                racket.affiliate_url
+                            )}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-xs font-bold text-blue-700
+                                   hover:underline"
+                        >
+                            查看商品
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    `
+                    : "";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="mb-4 flex h-36 items-center
+                                    justify-center overflow-hidden
+                                    rounded-xl border-2 border-dashed
+                                    border-[#b2c0b0] bg-[#f7f9f6]">
+                            ${image}
+                        </div>
+
+                        <h3 class="text-base font-extrabold">
+                            ${escapeHtml(racket.brand)}
+                            ${escapeHtml(racket.model)}
+                        </h3>
+
+                        <p class="mt-1 text-xs font-medium text-gray-500">
+                            ${escapeHtml(
+                                styleLabels[racket.playing_style] ||
+                                racket.playing_style ||
+                                "未分類"
+                            )}
+                            ·
+                            ${escapeHtml(
+                                racket.suitable_level || "程度不限"
+                            )}
+                        </p>
+
+                        <p class="my-3 text-xs leading-relaxed
+                                  text-gray-600">
+                            ${escapeHtml(
+                                racket.description || "暫無產品說明。"
+                            )}
+                        </p>
+
+                        <div class="mb-4 text-[11px] font-medium
+                                    text-gray-400">
+                            重量 ${escapeHtml(racket.weight || "未提供")}
+                            <span class="mx-1">|</span>
+                            平衡
+                            ${escapeHtml(
+                                balanceLabels[racket.balance] ||
+                                racket.balance ||
+                                "未提供"
+                            )}
+                            <span class="mx-1">|</span>
+                            軟硬
+                            ${escapeHtml(
+                                flexibilityLabels[
+                                    racket.flexibility
+                                ] ||
+                                racket.flexibility ||
+                                "未提供"
+                            )}
+                        </div>
+                    </div>
+
+                    <div class="flex items-end justify-between
+                                border-t border-gray-100 pt-3">
+                        <div>
+                            <span class="block text-[10px] text-gray-400">
+                                參考價格
+                            </span>
+                            <span class="text-base font-extrabold">
+                                NT$ ${formatPrice(racket.price)}
+                            </span>
+                        </div>
+                        ${affiliateLink}
+                    </div>
+                `;
+
+                gridContainer.appendChild(card);
+            });
+        }
+
+        async function queryRackets() {
+            renderSelectedTags();
+            updateButtonActiveStates();
+
+            if (
+                !currentFilters.style ||
+                !currentFilters.budget
+            ) {
+                rackets = [];
+                resultCountText.textContent =
+                    "請選擇打法與預算。";
+                emptyResult(
+                    "fa-filter",
+                    "請先選擇查詢條件",
+                    "打法與預算為必填條件。"
+                );
+                return;
+            }
+
+            const params = new URLSearchParams({
+                budget: currentFilters.budget,
+                playing_style: currentFilters.style,
+                page: "1",
+                pageSize: "100"
+            });
+
+            if (currentFilters.brand) {
+                params.set("brand", currentFilters.brand);
+            }
+
+            isLoadingRackets = true;
+            renderRackets();
+
+            try {
+                const response = await apiFetch(
+                    `${RACKETS_PATH}?${params.toString()}`,
+                    {
+                        headers: {
+                            Accept: "application/json"
+                        }
+                    }
+                );
+
+                rackets = response.data;
+            } catch (error) {
+                rackets = [];
+                addAssistantMessage(
+                    `球拍查詢失敗：${error.message}`
+                );
+            } finally {
+                isLoadingRackets = false;
+                renderRackets();
+            }
+        }
+
+        async function selectRecommendedRacket(racketId) {
+            try {
+                resultCountText.textContent =
+                    "正在取得推薦球拍資料...";
+
+                const racket = await apiFetch(
+                    `${RACKETS_PATH}/${encodeURIComponent(
+                        racketId
+                    )}`,
+                    {
+                        headers: {
+                            Accept: "application/json"
+                        }
+                    }
+                );
+
+                currentFilters = {
+                    style: racket.playing_style,
+                    budget: String(
+                        Math.max(
+                            1,
+                            Math.ceil(Number(racket.price))
+                        )
+                    ),
+                    brand: racket.brand
+                };
+
+                rackets = [racket];
+                updateButtonActiveStates();
+                renderSelectedTags();
+                renderRackets();
+
+                document
+                    .getElementById("equipment-grid")
+                    .scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+            } catch (error) {
+                addAssistantMessage(
+                    `無法取得推薦球拍：${error.message}`
+                );
+            }
+        }
+
+        function addUserMessage(message) {
+            const row = document.createElement("div");
+            row.className = "flex items-start justify-end";
+
+            const bubble = document.createElement("div");
+            bubble.className =
+                "max-w-[85%] whitespace-pre-wrap rounded-2xl " +
+                "bg-[#263728] p-3 text-xs leading-relaxed " +
+                "text-white shadow-sm";
+            bubble.textContent = message;
+
+            row.appendChild(bubble);
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+        }
+
+        function addAssistantMessage(
+            message,
+            recommendation = null
+        ) {
+            const row = document.createElement("div");
+            row.className = "flex items-start";
+
+            const bubble = document.createElement("div");
+            bubble.className =
+                "max-w-[88%] rounded-2xl border " +
+                "border-gray-300 bg-gray-100 p-3 " +
+                "text-xs leading-relaxed shadow-sm";
+
+            if (recommendation) {
+                const link = document.createElement("a");
+                link.href = "#equipment-grid";
+                link.className =
+                    "mb-1 block font-extrabold text-blue-700 " +
+                    "underline underline-offset-2";
+                link.textContent =
+                    `${recommendation.brand} ` +
+                    `${recommendation.model}`;
+                link.title =
+                    "查詢這支球拍並更新頁面篩選條件";
+
+                link.addEventListener("click", async (event) => {
+                    event.preventDefault();
+                    await selectRecommendedRacket(
+                        recommendation.id
+                    );
+                });
+
+                bubble.appendChild(link);
+            }
+
+            const content = document.createElement("div");
+            content.className = "whitespace-pre-wrap";
+            content.textContent = message;
+            bubble.appendChild(content);
+
+            row.appendChild(bubble);
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+        }
+
+        function saveSessionId(sessionId) {
+            if (sessionId) {
+                sessionStorage.setItem(
+                    SESSION_STORAGE_KEY,
+                    sessionId
+                );
+            }
+        }
+
+        function getSessionId() {
+            return sessionStorage.getItem(
+                SESSION_STORAGE_KEY
+            );
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem(
+                SESSION_STORAGE_KEY
+            );
+        }
+
+        async function processChatResponse(response) {
+            saveSessionId(response.session_id);
+
+            if (response.transcript) {
+                addUserMessage(response.transcript);
+            }
+
+            addAssistantMessage(
+                response.message,
+                response.status === "recommended"
+                    ? response.recommendation
+                    : null
+            );
+        }
+
+        async function sendTextMessage(message) {
+            if (isSendingChat) {
+                return;
+            }
+
+            isSendingChat = true;
+            setBusy(sendBtn, true);
+            setBusy(voiceBtn, true);
+
+            try {
+                const sessionId = getSessionId();
+
+                const response = await apiFetch(CHAT_PATH, {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message,
+                        ...(sessionId
+                            ? { session_id: sessionId }
+                            : {})
+                    })
+                });
+
+                await processChatResponse(response);
+            } catch (error) {
+                addAssistantMessage(
+                    `對話失敗：${error.message}`
+                );
+            } finally {
+                isSendingChat = false;
+                setBusy(sendBtn, false);
+                setBusy(voiceBtn, false);
+                chatInput.focus();
+            }
+        }
+
+        function getSupportedMimeType() {
+            const candidates = [
+                "audio/webm;codecs=opus",
+                "audio/webm",
+                "audio/ogg;codecs=opus",
+                "audio/mp4"
+            ];
+
+            return candidates.find(
+                (type) =>
+                    typeof MediaRecorder !== "undefined" &&
+                    MediaRecorder.isTypeSupported(type)
+            ) || "";
+        }
+
+        async function startRecording() {
+            if (
+                !navigator.mediaDevices?.getUserMedia ||
+                typeof MediaRecorder === "undefined"
+            ) {
+                throw new Error(
+                    "目前瀏覽器不支援錄音功能。"
+                );
+            }
+
+            recordingStream =
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+            const mimeType = getSupportedMimeType();
+            const options = mimeType ? { mimeType } : undefined;
+
+            mediaRecorder = new MediaRecorder(
+                recordingStream,
+                options
+            );
+            audioChunks = [];
+
+            mediaRecorder.addEventListener(
+                "dataavailable",
+                (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                }
+            );
+
+            mediaRecorder.addEventListener(
+                "stop",
+                uploadRecording
+            );
+
+            mediaRecorder.start();
+            voiceBtn.classList.add("recording");
+            voiceBtn.title = "停止錄音";
+        }
+
+        function stopRecording() {
+            if (
+                mediaRecorder &&
+                mediaRecorder.state === "recording"
+            ) {
+                mediaRecorder.stop();
+            }
+
+            voiceBtn.classList.remove("recording");
+            voiceBtn.title = "開始錄音";
+        }
+
+        async function uploadRecording() {
+            const mimeType =
+                mediaRecorder?.mimeType || "audio/webm";
+            const normalizedType =
+                mimeType.split(";")[0] || "audio/webm";
+            const extension =
+                normalizedType.includes("ogg")
+                    ? "ogg"
+                    : normalizedType.includes("mp4")
+                        ? "m4a"
+                        : "webm";
+
+            const audioBlob = new Blob(audioChunks, {
+                type: normalizedType
+            });
+
+            recordingStream
+                ?.getTracks()
+                .forEach((track) => track.stop());
+
+            recordingStream = null;
+            mediaRecorder = null;
+            audioChunks = [];
+
+            if (!audioBlob.size) {
+                addAssistantMessage("沒有錄到任何聲音。");
+                return;
+            }
+
+            isSendingChat = true;
+            setBusy(sendBtn, true);
+            setBusy(voiceBtn, true);
+            addAssistantMessage("正在辨識語音，請稍候...");
+
+            try {
+                const formData = new FormData();
+                formData.append(
+                    "audio",
+                    audioBlob,
+                    `recording.${extension}`
+                );
+
+                const sessionId = getSessionId();
+
+                if (sessionId) {
+                    formData.append(
+                        "session_id",
+                        sessionId
+                    );
+                }
+
+                const response = await apiFetch(
+                    `${CHAT_PATH}/voice`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json"
+                        },
+                        body: formData
+                    }
+                );
+
+                await processChatResponse(response);
+            } catch (error) {
+                addAssistantMessage(
+                    `語音對話失敗：${error.message}`
+                );
+            } finally {
+                isSendingChat = false;
+                setBusy(sendBtn, false);
+                setBusy(voiceBtn, false);
+            }
+        }
+
+        document
+            .querySelectorAll(".filter-btn")
+            .forEach((button) => {
+                button.addEventListener("click", async () => {
+                    currentFilters[
+                        button.dataset.type
+                    ] = button.dataset.value;
+
+                    await queryRackets();
+                });
+            });
+
+        clearAllBtn.addEventListener("click", () => {
+            currentFilters = {
+                style: "",
+                budget: "",
+                brand: ""
+            };
+            rackets = [];
+            updateButtonActiveStates();
+            renderSelectedTags();
+            resultCountText.textContent =
+                "請選擇打法與預算。";
+            emptyResult(
+                "fa-filter",
+                "請先選擇查詢條件",
+                "打法與預算為必填條件。"
+            );
+        });
+
+        chatForm.addEventListener(
+            "submit",
+            async (event) => {
+                event.preventDefault();
+
+                const message = chatInput.value.trim();
+
+                if (!message || isSendingChat) {
+                    return;
+                }
+
+                addUserMessage(message);
+                chatInput.value = "";
+                await sendTextMessage(message);
+            }
+        );
+
+        voiceBtn.addEventListener("click", async () => {
+            if (isSendingChat) {
+                return;
+            }
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state === "recording"
+            ) {
+                stopRecording();
+                return;
+            }
+
+            try {
+                await startRecording();
+            } catch (error) {
+                addAssistantMessage(
+                    `無法開始錄音：${error.message}`
+                );
+            }
+        });
+
+        newChatBtn.addEventListener("click", () => {
+            stopRecording();
+            clearSession();
+            chatMessages.innerHTML = "";
+            addAssistantMessage(
+                "已開始新的對話。請告訴我你的程度、" +
+                "打法、預算及偏好的品牌。"
+            );
+            chatInput.focus();
+        });
+
+        toggleChatBtn.addEventListener("click", () => {
+            chatWindow.classList.toggle("hidden");
+        });
+
+        closeChatBtn.addEventListener("click", () => {
+            chatWindow.classList.add("hidden");
+        });
+
+        window.addEventListener("beforeunload", () => {
+            recordingStream
+                ?.getTracks()
+                .forEach((track) => track.stop());
+        });
+
+        updateButtonActiveStates();
+        renderSelectedTags();
+        emptyResult(
+            "fa-filter",
+            "請先選擇查詢條件",
+            "打法與預算為必填條件。"
+        );
+    </script>
+</body>
+</html>

@@ -54,9 +54,10 @@ def create_racket() -> Racket:
 def test_query_rackets_success(
     mock_racket_service,
 ):
-    mock_racket_service.query_rackets.return_value = [
-        create_racket()
-    ]
+    mock_racket_service.query_rackets.return_value = (
+        [create_racket()],
+        1,
+    )
 
     response = client.get(
         "/api/v1/rackets",
@@ -71,8 +72,8 @@ def test_query_rackets_success(
 
     body = response.json()
 
-    assert len(body) == 1
-    assert body[0] == {
+    assert body["data"] == [{
+        "id": 1,
         "brand": "YONEX",
         "model": "ASTROX 88 D PRO",
         "price": "4890.00",
@@ -91,22 +92,29 @@ def test_query_rackets_success(
             "astrox-88-d-pro?ref=badminton"
         ),
         "is_active": True,
-    }
+    }]
 
-    assert "id" not in body[0]
-    assert "embedding" not in body[0]
+    assert body["pagination"] == {
+        "page": 1,
+        "pageSize": 10,
+        "totalItems": 1,
+        "totalPages": 1,
+    }
+    assert "embedding" not in body["data"][0]
 
     mock_racket_service.query_rackets.assert_called_once_with(
         budget=Decimal("5000"),
         playing_style="offensive",
         brand="YONEX",
+        page=1,
+        page_size=10,
     )
 
 
 def test_query_rackets_without_brand(
     mock_racket_service,
 ):
-    mock_racket_service.query_rackets.return_value = []
+    mock_racket_service.query_rackets.return_value = ([], 0)
 
     response = client.get(
         "/api/v1/rackets",
@@ -117,13 +125,51 @@ def test_query_rackets_without_brand(
     )
 
     assert response.status_code == 200
-    assert response.json() == []
+    assert response.json() == {
+        "data": [],
+        "pagination": {
+            "page": 1,
+            "pageSize": 10,
+            "totalItems": 0,
+            "totalPages": 0,
+        },
+    }
 
     mock_racket_service.query_rackets.assert_called_once_with(
         budget=Decimal("3000"),
         playing_style="defensive",
         brand=None,
+        page=1,
+        page_size=10,
     )
+
+
+def test_get_racket_success(mock_racket_service):
+    mock_racket_service.get_racket.return_value = create_racket()
+
+    response = client.get("/api/v1/rackets/1")
+
+    assert response.status_code == 200
+    assert response.json()["id"] == 1
+    assert response.json()["brand"] == "YONEX"
+    assert response.json()["model"] == "ASTROX 88 D PRO"
+    assert "embedding" not in response.json()
+
+    mock_racket_service.get_racket.assert_called_once_with(1)
+
+
+def test_get_racket_not_found(mock_racket_service):
+    mock_racket_service.get_racket.return_value = None
+
+    response = client.get("/api/v1/rackets/999")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == {
+        "code": "RACKET_NOT_FOUND",
+        "message": "Racket 999 was not found.",
+    }
+
+    mock_racket_service.get_racket.assert_called_once_with(999)
 
 
 def test_query_rackets_missing_budget(

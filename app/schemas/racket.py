@@ -21,6 +21,7 @@ RacketBrand = Literal[
 class RacketQueryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: int
     brand: str
     model: str
     price: Decimal

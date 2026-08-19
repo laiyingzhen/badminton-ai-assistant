@@ -16,6 +16,30 @@ class RacketRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    def find_by_id(
+        self,
+        racket_id: int,
+    ) -> Racket | None:
+        try:
+            return (
+                self.db.query(Racket)
+                .filter(
+                    Racket.id == racket_id,
+                    Racket.is_active.is_(True),
+                )
+                .first()
+            )
+
+        except SQLAlchemyError as exc:
+            logger.exception(
+                "Database query failed while querying racket id %s.",
+                racket_id,
+            )
+
+            raise DatabaseServiceError(
+                "Unable to query racket database."
+            ) from exc
+
     def find_similar(
         self,
         query_embedding: list[float],

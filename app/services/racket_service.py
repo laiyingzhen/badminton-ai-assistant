@@ -12,6 +12,12 @@ class RacketService:
     ):
         self.racket_repository = racket_repository
 
+    def get_racket(
+        self,
+        racket_id: int,
+    ) -> Racket | None:
+        return self.racket_repository.find_by_id(racket_id)
+
     def query_rackets(
         self,
         budget: Decimal,

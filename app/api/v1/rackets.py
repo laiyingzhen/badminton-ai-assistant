@@ -2,7 +2,7 @@ from decimal import Decimal
 from math import ceil
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 from app.api.dependencies import get_racket_service
 from app.schemas.racket import (
@@ -76,6 +76,7 @@ def query_rackets(
         Query(
             alias="pageSize",
             ge=1,
+            le=100,
             description="每頁筆數，預設為 10。",
         ),
     ] = 10,
@@ -88,7 +89,11 @@ def query_rackets(
         page_size=page_size,
     )
 
-    total_pages = ceil(total_items / page_size)
+    total_pages = (
+        ceil(total_items / page_size)
+        if total_items
+        else 0
+    )
 
     return RacketListResponse(
         data=[
@@ -102,3 +107,49 @@ def query_rackets(
             total_pages=total_pages,
         ),
     )
+
+
+@router.get(
+    "/{racket_id}",
+    response_model=RacketQueryResponse,
+    responses={
+        404: {
+            "description": "Racket was not found.",
+        },
+        422: {
+            "model": ErrorResponse,
+            "description": "Request validation failed.",
+        },
+        503: {
+            "model": ErrorResponse,
+            "description": "Database service failed.",
+        },
+    },
+)
+def get_racket(
+    racket_id: Annotated[
+        int,
+        Path(
+            gt=0,
+            description="球拍 ID。",
+        ),
+    ],
+    service: Annotated[
+        RacketService,
+        Depends(get_racket_service),
+    ],
+) -> RacketQueryResponse:
+    racket = service.get_racket(racket_id)
+
+    if racket is None:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": "RACKET_NOT_FOUND",
+                "message": (
+                    f"Racket {racket_id} was not found."
+                ),
+            },
+        )
+
+    return RacketQueryResponse.model_validate(racket)
