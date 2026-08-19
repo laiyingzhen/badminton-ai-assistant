@@ -1,10 +1,10 @@
 # AI 羽球裝備助手瀏覽器測試指南
 
-本文件說明如何在 Windows 本機啟動 PostgreSQL、FastAPI 後端與靜態網頁，並使用瀏覽器測試 `badminton_equipment_demo.html` 的球拍查詢、文字推薦、語音推薦及推薦球拍連結。
+本文件說明如何在 Windows 本機啟動 PostgreSQL、FastAPI 後端與靜態網頁，並使用瀏覽器測試 `index.html` 的球拍查詢、文字推薦、語音推薦及推薦球拍連結。
 
 ## 1. 測試範圍
 
-- 前端頁面：`badminton_equipment_demo.html`
+- 前端頁面：`index.html`
 - 後端預設網址：`http://127.0.0.1:8000`
 - 前端預設網址：`http://127.0.0.1:5500`
 - API 文件：`http://127.0.0.1:8000/docs`
@@ -162,7 +162,7 @@ python -m http.server 5500
 瀏覽器開啟：
 
 ```text
-http://127.0.0.1:5500/badminton_equipment_demo.html
+http://127.0.0.1:5500/index.html
 ```
 
 請使用 HTTP 靜態伺服器開啟，不要直接雙擊 HTML。直接開啟會使用 `file://`，可能造成跨來源請求及麥克風權限問題。

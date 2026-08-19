@@ -1,1660 +1,1240 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>AI 羽球裝備助手</title>
-
-  <style>
-    :root {
-      --primary: #166534;
-      --primary-dark: #14532d;
-      --primary-light: #22c55e;
-      --background: #f0fdf4;
-      --surface: #ffffff;
-      --border: #dcfce7;
-      --text: #17201b;
-      --muted: #64748b;
-      --danger: #dc2626;
-      --danger-dark: #b91c1c;
-      --user-message: #166534;
-      --assistant-message: #f1f5f9;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      min-height: 100vh;
-      margin: 0;
-      padding: 24px;
-      color: var(--text);
-      background:
-        radial-gradient(
-          circle at top left,
-          #dcfce7,
-          transparent 35%
-        ),
-        linear-gradient(
-          135deg,
-          #f8fafc,
-          var(--background)
-        );
-      font-family:
-        "Noto Sans TC",
-        "Microsoft JhengHei",
-        system-ui,
-        sans-serif;
-    }
-
-    button,
-    input,
-    textarea {
-      font: inherit;
-    }
-
-    .app {
-      width: min(900px, 100%);
-      margin: 0 auto;
-      overflow: hidden;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: 0 20px 50px rgb(22 101 52 / 12%);
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 22px 24px;
-      color: white;
-      background:
-        linear-gradient(
-          135deg,
-          #14532d,
-          #16a34a
-        );
-    }
-
-    .title-group {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .logo {
-      display: grid;
-      flex: 0 0 auto;
-      width: 48px;
-      height: 48px;
-      place-items: center;
-      font-size: 26px;
-      background: rgb(255 255 255 / 16%);
-      border: 1px solid rgb(255 255 255 / 25%);
-      border-radius: 15px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: clamp(20px, 4vw, 28px);
-    }
-
-    .subtitle {
-      margin: 4px 0 0;
-      color: rgb(255 255 255 / 75%);
-      font-size: 14px;
-    }
-
-    .reset-button {
-      padding: 9px 14px;
-      color: white;
-      cursor: pointer;
-      background: rgb(255 255 255 / 12%);
-      border: 1px solid rgb(255 255 255 / 30%);
-      border-radius: 10px;
-    }
-
-    .reset-button:hover:not(:disabled) {
-      background: rgb(255 255 255 / 20%);
-    }
-
-    .reset-button:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
-
-    .settings {
-      padding: 16px 24px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .settings label {
-      display: block;
-      margin-bottom: 7px;
-      color: #475569;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .api-row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .api-input {
-      width: 100%;
-      padding: 10px 12px;
-      color: #334155;
-      background: white;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      outline: none;
-    }
-
-    .api-input:focus,
-    .message-input:focus {
-      border-color: var(--primary-light);
-      box-shadow:
-        0 0 0 3px rgb(34 197 94 / 14%);
-    }
-
-    .connection-state {
-      display: flex;
-      align-items: center;
-      margin-top: 9px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .state-dot {
-      width: 8px;
-      height: 8px;
-      margin-right: 7px;
-      background: #94a3b8;
-      border-radius: 50%;
-    }
-
-    .state-dot.online {
-      background: #22c55e;
-    }
-
-    .state-dot.error {
-      background: #ef4444;
-    }
-
-    .state-dot.recording {
-      background: #ef4444;
-      animation: pulse 1.2s infinite;
-    }
-
-    .messages {
-      height: min(58vh, 580px);
-      min-height: 380px;
-      padding: 24px;
-      overflow-y: auto;
-      background:
-        linear-gradient(
-          rgb(255 255 255 / 92%),
-          rgb(255 255 255 / 92%)
-        ),
-        repeating-linear-gradient(
-          45deg,
-          #dcfce7,
-          #dcfce7 10px,
-          #f0fdf4 10px,
-          #f0fdf4 20px
-        );
-    }
-
-    .message {
-      display: flex;
-      margin-bottom: 18px;
-    }
-
-    .message.user {
-      justify-content: flex-end;
-    }
-
-    .bubble {
-      max-width: min(64%, 520px);
-      padding: 10px 13px;
-      line-height: 1.65;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      border-radius: 17px;
-    }
-
-    .assistant .bubble {
-      color: #334155;
-      background: var(--assistant-message);
-      border-bottom-left-radius: 5px;
-    }
-
-    .user .bubble {
-      color: white;
-      background: var(--user-message);
-      border-bottom-right-radius: 5px;
-    }
-
-    .message-meta {
-      margin-bottom: 5px;
-      color: #94a3b8;
-      font-size: 11px;
-    }
-
-    .user .message-meta {
-      color: rgb(255 255 255 / 65%);
-      text-align: right;
-    }
-
-    .recommendation {
-      margin-top: 12px;
-      padding: 13px;
-      color: #14532d;
-      background: #dcfce7;
-      border: 1px solid #bbf7d0;
-      border-radius: 12px;
-    }
-
-    .recommendation strong {
-      display: block;
-      margin-bottom: 5px;
-    }
-
-    .criteria {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin-top: 11px;
-    }
-
-    .tag {
-      padding: 4px 8px;
-      color: #166534;
-      font-size: 12px;
-      background: #dcfce7;
-      border-radius: 999px;
-    }
-
-    details {
-      margin-top: 11px;
-      color: #64748b;
-      font-size: 12px;
-    }
-
-    summary {
-      cursor: pointer;
-    }
-
-    pre {
-      max-height: 250px;
-      padding: 10px;
-      overflow: auto;
-      color: #d1fae5;
-      background: #0f172a;
-      border-radius: 8px;
-      white-space: pre-wrap;
-    }
-
-    .composer-area {
-      padding: 14px 24px 24px;
-      border-top: 1px solid #e2e8f0;
-    }
-
-    .recording-status {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 32px;
-      margin-bottom: 10px;
-      color: var(--danger);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .recording-status.visible {
-      display: flex;
-    }
-
-    .recording-indicator {
-      width: 9px;
-      height: 9px;
-      background: var(--danger);
-      border-radius: 50%;
-      animation: pulse 1.2s infinite;
-    }
-
-    .composer {
-      display: flex;
-      align-items: flex-end;
-      gap: 10px;
-    }
-
-    .message-input {
-      width: 100%;
-      min-height: 48px;
-      max-height: 150px;
-      padding: 12px 14px;
-      resize: none;
-      border: 1px solid #cbd5e1;
-      border-radius: 14px;
-      outline: none;
-    }
-
-    .message-input:disabled {
-      background: #f8fafc;
-      cursor: not-allowed;
-    }
-
-    .voice-button,
-    .send-button {
-      flex: 0 0 auto;
-      height: 48px;
-      cursor: pointer;
-      border-radius: 14px;
-    }
-
-    .voice-button {
-      width: 48px;
-      padding: 0;
-      color: var(--primary);
-      font-size: 21px;
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
-    }
-
-    .voice-button:hover:not(:disabled) {
-      background: #dcfce7;
-    }
-
-    .voice-button.recording {
-      color: white;
-      background: var(--danger);
-      border-color: var(--danger);
-      animation: pulse-shadow 1.2s infinite;
-    }
-
-    .voice-button.recording:hover:not(:disabled) {
-      background: var(--danger-dark);
-    }
-
-    .voice-button:disabled,
-    .send-button:disabled {
-      cursor: not-allowed;
-      opacity: 0.55;
-    }
-
-    .send-button {
-      min-width: 90px;
-      padding: 0 18px;
-      color: white;
-      font-weight: 700;
-      background: var(--primary);
-      border: 0;
-    }
-
-    .send-button:hover:not(:disabled) {
-      background: var(--primary-dark);
-    }
-
-    .input-help {
-      margin: 9px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-    }
-
-    .error-message {
-      color: var(--danger);
-      background: #fef2f2;
-      border: 1px solid #fecaca;
-    }
-
-    .typing {
-      display: inline-flex;
-      gap: 5px;
-      align-items: center;
-    }
-
-    .typing span {
-      width: 7px;
-      height: 7px;
-      background: #94a3b8;
-      border-radius: 50%;
-      animation: typing 1.2s infinite ease-in-out;
-    }
-
-    .typing span:nth-child(2) {
-      animation-delay: 0.15s;
-    }
-
-    .typing span:nth-child(3) {
-      animation-delay: 0.3s;
-    }
-
-    @keyframes typing {
-      0%,
-      60%,
-      100% {
-        transform: translateY(0);
-      }
-
-      30% {
-        transform: translateY(-5px);
-      }
-    }
-
-    @keyframes pulse {
-      0%,
-      100% {
-        opacity: 1;
-      }
-
-      50% {
-        opacity: 0.35;
-      }
-    }
-
-    @keyframes pulse-shadow {
-      0%,
-      100% {
-        box-shadow: 0 0 0 0 rgb(220 38 38 / 30%);
-      }
-
-      50% {
-        box-shadow: 0 0 0 7px rgb(220 38 38 / 0%);
-      }
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 0;
-      }
-
-      .app {
-        min-height: 100vh;
-        border: 0;
-        border-radius: 0;
-      }
-
-      .header,
-      .settings,
-      .messages,
-      .composer-area {
-        padding-right: 16px;
-        padding-left: 16px;
-      }
-
-      .subtitle {
-        display: none;
-      }
-
-      .messages {
-        height: calc(100vh - 300px);
-        min-height: 300px;
-      }
-
-      .bubble {
-        max-width: 80%;
-      }
-
-      .send-button {
-        min-width: 72px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+    <title>羽球裝備推薦</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    >
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+    >
+
+    <style>
+        body {
+            background: #e6ebe2;
+            color: #263728;
+            font-family: "Noto Sans TC", sans-serif;
+        }
+
+        .thick-border {
+            border: 2px solid #263728;
+        }
+
+        .filter-btn {
+            border: 1px solid #263728;
+            background: white;
+            color: #263728;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .filter-btn.active {
+            border-color: #263728;
+            background: #263728;
+            color: white;
+        }
+
+        .filter-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            border-radius: 10px;
+            background: rgba(38, 55, 40, 0.25);
+        }
+
+        .recording {
+            color: #dc2626 !important;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            50% {
+                opacity: 0.45;
+            }
+        }
+    </style>
 </head>
 
-<body>
-  <main class="app">
-    <header class="header">
-      <div class="title-group">
-        <div class="logo">🏸</div>
-
-        <div>
-          <h1>AI 羽球裝備助手</h1>
-
-          <p class="subtitle">
-            告訴我你的球風、程度、預算與品牌偏好
-          </p>
-        </div>
-      </div>
-
-      <button
-        id="resetButton"
-        class="reset-button"
-        type="button"
-      >
-        重新對話
-      </button>
-    </header>
-
-    <section class="settings">
-      <label for="apiUrl">
-        文字聊天 API 網址
-      </label>
-
-      <div class="api-row">
-        <input
-          id="apiUrl"
-          class="api-input"
-          type="url"
-          value="http://127.0.0.1:8000/api/v1/recommendations/rackets/chat"
-          autocomplete="off"
-          spellcheck="false"
-        >
-      </div>
-
-      <div class="connection-state">
-        <span
-          id="stateDot"
-          class="state-dot"
-        ></span>
-
-        <span id="stateText">
-          尚未送出請求
-        </span>
-      </div>
-    </section>
-
-    <section
-      id="messages"
-      class="messages"
-      aria-live="polite"
+<body class="min-h-screen pb-24">
+    <header
+        class="sticky top-0 z-30 border-b border-[#c8d4c4]
+               bg-[#e6ebe2] px-4 py-3 md:px-8"
     >
-      <div class="message assistant">
-        <div class="bubble">
-          <div class="message-meta">
-            AI 助手
-          </div>
-
-          嗨！我是你的 AI 羽球裝備助手。你可以輸入文字，或按下麥克風錄製語音，告訴我你的程度、打法、預算與品牌偏好。
-        </div>
-      </div>
-    </section>
-
-    <section class="composer-area">
-      <div
-        id="recordingStatus"
-        class="recording-status"
-        role="status"
-        aria-live="polite"
-      >
-        <span class="recording-indicator"></span>
-
-        <span>
-          錄音中
-          <span id="recordingTime">00:00</span>
-          ，再次按下麥克風即可送出
-        </span>
-      </div>
-
-      <form
-        id="chatForm"
-        class="composer"
-      >
-        <textarea
-          id="messageInput"
-          class="message-input"
-          rows="1"
-          maxlength="2000"
-          placeholder="例如：我是中階進攻型球員，預算 5000 元左右……"
-          aria-label="聊天訊息"
-          required
-        ></textarea>
-
-        <button
-          id="voiceButton"
-          class="voice-button"
-          type="button"
-          aria-label="開始錄音"
-          title="開始錄音"
+        <div
+            class="mx-auto flex max-w-6xl items-center justify-between"
         >
-          🎙️
-        </button>
-
-        <button
-          id="sendButton"
-          class="send-button"
-          type="submit"
-        >
-          送出
-        </button>
-      </form>
-
-      <p id="inputHelp" class="input-help">
-        按 Enter 送出文字；按麥克風開始錄音，再按一次停止並送出
-      </p>
-    </section>
-  </main>
-
-  <script>
-    const chatForm =
-      document.querySelector("#chatForm");
-
-    const messageInput =
-      document.querySelector("#messageInput");
-
-    const sendButton =
-      document.querySelector("#sendButton");
-
-    const voiceButton =
-      document.querySelector("#voiceButton");
-
-    const resetButton =
-      document.querySelector("#resetButton");
-
-    const messagesElement =
-      document.querySelector("#messages");
-
-    const apiUrlInput =
-      document.querySelector("#apiUrl");
-
-    const stateDot =
-      document.querySelector("#stateDot");
-
-    const stateText =
-      document.querySelector("#stateText");
-
-    const recordingStatus =
-      document.querySelector("#recordingStatus");
-
-    const recordingTime =
-      document.querySelector("#recordingTime");
-
-    const inputHelp =
-      document.querySelector("#inputHelp");
-
-    let sessionId =
-      localStorage.getItem("racketChatSessionId");
-
-    let isSending = false;
-    let isRecording = false;
-    let mediaRecorder = null;
-    let microphoneStream = null;
-    let audioChunks = [];
-    let recordingStartedAt = null;
-    let recordingTimerId = null;
-
-    const fieldLabels = {
-      playing_style: "打法",
-      level: "程度",
-      budget: "預算",
-      brand: "品牌"
-    };
-
-    const valueLabels = {
-      offensive: "進攻型",
-      defensive: "防守型",
-      all_round: "全能型",
-      beginner: "初階",
-      intermediate: "中階",
-      advanced: "進階"
-    };
-
-    function escapeHtml(value) {
-      const element = document.createElement("div");
-      element.textContent = String(value ?? "");
-      return element.innerHTML;
-    }
-
-    function formatValue(key, value) {
-      if (
-        value === null ||
-        value === undefined ||
-        value === ""
-      ) {
-        return "";
-      }
-
-      if (key === "budget") {
-        return `NT$ ${
-          Number(value).toLocaleString("zh-TW")
-        }`;
-      }
-
-      return valueLabels[value] || value;
-    }
-
-    function setConnectionState(type, text) {
-      stateDot.className =
-        `state-dot ${type || ""}`;
-
-      stateText.textContent = text;
-    }
-
-    function scrollToBottom() {
-      messagesElement.scrollTop =
-        messagesElement.scrollHeight;
-    }
-
-    function addUserMessage(
-      text,
-      inputType = "text"
-    ) {
-      const wrapper =
-        document.createElement("div");
-
-      const sourceLabel =
-        inputType === "voice"
-          ? "你 · 🎙️ 語音"
-          : "你 · 文字";
-
-      wrapper.className = "message user";
-
-      wrapper.innerHTML = `
-        <div class="bubble">
-          <div class="message-meta">
-            ${escapeHtml(sourceLabel)}
-          </div>
-
-          ${escapeHtml(text)}
-        </div>
-      `;
-
-      messagesElement.appendChild(wrapper);
-      scrollToBottom();
-    }
-
-    function buildCriteriaHtml(criteria) {
-      if (!criteria) {
-        return "";
-      }
-
-      const tags = Object.entries(criteria)
-        .filter(([, value]) => (
-          value !== null &&
-          value !== undefined &&
-          value !== ""
-        ))
-        .map(([key, value]) => {
-          const label =
-            fieldLabels[key] || key;
-
-          return `
-            <span class="tag">
-              ${escapeHtml(label)}：${
-                escapeHtml(formatValue(key, value))
-              }
-            </span>
-          `;
-        })
-        .join("");
-
-      return tags
-        ? `<div class="criteria">${tags}</div>`
-        : "";
-    }
-
-    function buildRecommendationHtml(
-      recommendation
-    ) {
-      if (!recommendation) {
-        return "";
-      }
-
-      const price = Number(
-        recommendation.price
-      ).toLocaleString("zh-TW");
-
-      return `
-        <div class="recommendation">
-          <strong>
-            ${escapeHtml(recommendation.brand)}
-            ${escapeHtml(recommendation.model)}
-          </strong>
-
-          <span>
-            參考價格：NT$ ${escapeHtml(price)}
-          </span>
-        </div>
-      `;
-    }
-
-    function addAssistantMessage(data) {
-      const wrapper =
-        document.createElement("div");
-
-      wrapper.className =
-        "message assistant";
-
-      wrapper.innerHTML = `
-        <div class="bubble">
-          <div class="message-meta">
-            AI 助手 · 狀態：${
-              escapeHtml(data.status)
-            }
-          </div>
-
-          ${escapeHtml(data.message)}
-
-          ${
-            buildRecommendationHtml(
-              data.recommendation
-            )
-          }
-
-          ${buildCriteriaHtml(data.criteria)}
-
-          <details>
-            <summary>
-              查看 API 原始回應
-            </summary>
-
-            <pre>${
-              escapeHtml(
-                JSON.stringify(data, null, 2)
-              )
-            }</pre>
-          </details>
-        </div>
-      `;
-
-      messagesElement.appendChild(wrapper);
-      scrollToBottom();
-    }
-
-    function addErrorMessage(message, details) {
-      const wrapper =
-        document.createElement("div");
-
-      wrapper.className =
-        "message assistant";
-
-      wrapper.innerHTML = `
-        <div class="bubble error-message">
-          <strong>請求失敗</strong><br>
-
-          ${escapeHtml(message)}
-
-          ${
-            details
-              ? `
-                <details>
-                  <summary>
-                    查看錯誤內容
-                  </summary>
-
-                  <pre>${escapeHtml(details)}</pre>
-                </details>
-              `
-              : ""
-          }
-        </div>
-      `;
-
-      messagesElement.appendChild(wrapper);
-      scrollToBottom();
-    }
-
-    function showTyping(label = "AI 回覆中") {
-      hideTyping();
-
-      const wrapper =
-        document.createElement("div");
-
-      wrapper.id = "typingMessage";
-      wrapper.className =
-        "message assistant";
-
-      wrapper.innerHTML = `
-        <div class="bubble">
-          <div class="message-meta">
-            ${escapeHtml(label)}
-          </div>
-
-          <span
-            class="typing"
-            aria-label="${escapeHtml(label)}"
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </div>
-      `;
-
-      messagesElement.appendChild(wrapper);
-      scrollToBottom();
-    }
-
-    function hideTyping() {
-      document
-        .querySelector("#typingMessage")
-        ?.remove();
-    }
-
-    function updateControls() {
-      messageInput.disabled =
-        isSending || isRecording;
-
-      sendButton.disabled =
-        isSending || isRecording;
-
-      voiceButton.disabled =
-        isSending;
-
-      resetButton.disabled =
-        isSending || isRecording;
-
-      apiUrlInput.disabled =
-        isSending || isRecording;
-
-      if (isSending) {
-        sendButton.textContent = "傳送中";
-      } else {
-        sendButton.textContent = "送出";
-      }
-
-      voiceButton.classList.toggle(
-        "recording",
-        isRecording
-      );
-
-      recordingStatus.classList.toggle(
-        "visible",
-        isRecording
-      );
-
-      voiceButton.textContent =
-        isRecording ? "⏹️" : "🎙️";
-
-      voiceButton.setAttribute(
-        "aria-label",
-        isRecording ? "停止錄音" : "開始錄音"
-      );
-
-      voiceButton.title =
-        isRecording ? "停止錄音" : "開始錄音";
-    }
-
-    function setSending(sending) {
-      isSending = sending;
-      updateControls();
-    }
-
-    function getTextApiUrl() {
-      return apiUrlInput.value
-        .trim()
-        .replace(/\/+$/, "");
-    }
-
-    function getVoiceApiUrl() {
-      return `${getTextApiUrl()}/voice`;
-    }
-
-    function getErrorMessage(
-      response,
-      data
-    ) {
-      return (
-        data?.detail?.message ||
-        data?.error?.message ||
-        data?.message ||
-        `HTTP ${response.status} ${response.statusText}`
-      );
-    }
-
-    async function readJsonResponse(response) {
-      const responseText =
-        await response.text();
-
-      if (!responseText) {
-        return {};
-      }
-
-      try {
-        return JSON.parse(responseText);
-      } catch {
-        return {
-          message: responseText
-        };
-      }
-    }
-
-    function saveSession(data) {
-      if (!data.session_id) {
-        return;
-      }
-
-      sessionId = data.session_id;
-
-      localStorage.setItem(
-        "racketChatSessionId",
-        sessionId
-      );
-    }
-
-    function handleRequestError(error) {
-      const message =
-        error instanceof TypeError
-          ? (
-            "無法連線至 API。請確認後端已啟動，" +
-            "並檢查 API 網址與 CORS 設定。"
-          )
-          : error.message;
-
-      addErrorMessage(
-        message,
-        error.cause
-      );
-
-      setConnectionState(
-        "error",
-        "API 連線失敗"
-      );
-    }
-
-    async function sendTextMessage(message) {
-      const apiUrl = getTextApiUrl();
-
-      if (!apiUrl) {
-        addErrorMessage(
-          "請先輸入文字聊天 API 網址。"
-        );
-        return;
-      }
-
-      const payload = {
-        message
-      };
-
-      if (sessionId) {
-        payload.session_id = sessionId;
-      }
-
-      addUserMessage(message, "text");
-      setSending(true);
-
-      setConnectionState(
-        "",
-        "正在傳送文字訊息……"
-      );
-
-      showTyping("AI 回覆中");
-
-      try {
-        const response = await fetch(
-          apiUrl,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Accept": "application/json"
-            },
-            body: JSON.stringify(payload)
-          }
-        );
-
-        const data =
-          await readJsonResponse(response);
-
-        if (!response.ok) {
-          throw new Error(
-            getErrorMessage(response, data),
-            {
-              cause: JSON.stringify(
-                data,
-                null,
-                2
-              )
-            }
-          );
-        }
-
-        saveSession(data);
-
-        hideTyping();
-        addAssistantMessage(data);
-
-        setConnectionState(
-          "online",
-          `文字 API 連線成功 · Session：${sessionId}`
-        );
-      } catch (error) {
-        hideTyping();
-        handleRequestError(error);
-      } finally {
-        setSending(false);
-        messageInput.focus();
-      }
-    }
-
-    async function sendVoiceMessage(
-      audioBlob,
-      mimeType
-    ) {
-      const voiceApiUrl =
-        getVoiceApiUrl();
-
-      if (!getTextApiUrl()) {
-        addErrorMessage(
-          "請先輸入文字聊天 API 網址。"
-        );
-        return;
-      }
-
-      if (!audioBlob.size) {
-        addErrorMessage(
-          "沒有錄製到任何聲音，請重新錄音。"
-        );
-        return;
-      }
-
-      const formData =
-        new FormData();
-
-      const extension =
-        getAudioExtension(mimeType);
-
-      formData.append(
-        "audio",
-        audioBlob,
-        `voice-message.${extension}`
-      );
-
-      if (sessionId) {
-        formData.append(
-          "session_id",
-          sessionId
-        );
-      }
-
-      setSending(true);
-
-      setConnectionState(
-        "",
-        "正在辨識語音並取得推薦……"
-      );
-
-      showTyping("語音辨識與 AI 回覆中");
-
-      try {
-        const response = await fetch(
-          voiceApiUrl,
-          {
-            method: "POST",
-            headers: {
-              "Accept": "application/json"
-            },
-            body: formData
-          }
-        );
-
-        const data =
-          await readJsonResponse(response);
-
-        if (!response.ok) {
-          throw new Error(
-            getErrorMessage(response, data),
-            {
-              cause: JSON.stringify(
-                data,
-                null,
-                2
-              )
-            }
-          );
-        }
-
-        saveSession(data);
-        hideTyping();
-
-        addUserMessage(
-          data.transcript ||
-            "語音訊息",
-          "voice"
-        );
-
-        addAssistantMessage(data);
-
-        setConnectionState(
-          "online",
-          `語音 API 連線成功 · Session：${sessionId}`
-        );
-      } catch (error) {
-        hideTyping();
-        handleRequestError(error);
-      } finally {
-        setSending(false);
-        messageInput.focus();
-      }
-    }
-
-    function getSupportedMimeType() {
-      const candidates = [
-        "audio/webm;codecs=opus",
-        "audio/webm",
-        "audio/mp4",
-        "audio/ogg;codecs=opus",
-        "audio/ogg"
-      ];
-
-      return (
-        candidates.find((mimeType) => (
-          MediaRecorder.isTypeSupported(
-            mimeType
-          )
-        )) || ""
-      );
-    }
-
-    function normalizeMimeType(mimeType) {
-      return String(mimeType || "")
-        .split(";")[0]
-        .trim()
-        .toLowerCase();
-    }
-
-    function getAudioExtension(mimeType) {
-      const normalized =
-        normalizeMimeType(mimeType);
-
-      const extensions = {
-        "audio/webm": "webm",
-        "audio/mp4": "m4a",
-        "audio/mpeg": "mp3",
-        "audio/mp3": "mp3",
-        "audio/ogg": "ogg",
-        "audio/wav": "wav",
-        "audio/x-wav": "wav",
-        "audio/flac": "flac",
-        "audio/x-flac": "flac"
-      };
-
-      return extensions[normalized] || "webm";
-    }
-
-    function updateRecordingTime() {
-      if (!recordingStartedAt) {
-        recordingTime.textContent = "00:00";
-        return;
-      }
-
-      const elapsedSeconds =
-        Math.floor(
-          (
-            Date.now() -
-            recordingStartedAt
-          ) / 1000
-        );
-
-      const minutes =
-        Math.floor(elapsedSeconds / 60);
-
-      const seconds =
-        elapsedSeconds % 60;
-
-      recordingTime.textContent =
-        `${String(minutes).padStart(2, "0")}:` +
-        `${String(seconds).padStart(2, "0")}`;
-    }
-
-    function startRecordingTimer() {
-      recordingStartedAt = Date.now();
-      updateRecordingTime();
-
-      recordingTimerId = window.setInterval(
-        updateRecordingTime,
-        500
-      );
-    }
-
-    function stopRecordingTimer() {
-      if (recordingTimerId !== null) {
-        window.clearInterval(
-          recordingTimerId
-        );
-      }
-
-      recordingTimerId = null;
-      recordingStartedAt = null;
-      recordingTime.textContent = "00:00";
-    }
-
-    function releaseMicrophone() {
-      if (!microphoneStream) {
-        return;
-      }
-
-      microphoneStream
-        .getTracks()
-        .forEach((track) => track.stop());
-
-      microphoneStream = null;
-    }
-
-    async function startRecording() {
-      if (
-        !navigator.mediaDevices ||
-        !navigator.mediaDevices.getUserMedia
-      ) {
-        addErrorMessage(
-          "此瀏覽器不支援麥克風錄音。請使用新版 Chrome、Edge、Firefox 或 Safari。"
-        );
-        return;
-      }
-
-      if (!window.MediaRecorder) {
-        addErrorMessage(
-          "此瀏覽器不支援 MediaRecorder，無法錄製語音。"
-        );
-        return;
-      }
-
-      try {
-        microphoneStream =
-          await navigator.mediaDevices.getUserMedia({
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true
-            }
-          });
-
-        const preferredMimeType =
-          getSupportedMimeType();
-
-        const recorderOptions =
-          preferredMimeType
-            ? {
-              mimeType: preferredMimeType
-            }
-            : undefined;
-
-        mediaRecorder =
-          new MediaRecorder(
-            microphoneStream,
-            recorderOptions
-          );
-
-        audioChunks = [];
-
-        mediaRecorder.addEventListener(
-          "dataavailable",
-          (event) => {
-            if (event.data.size > 0) {
-              audioChunks.push(event.data);
-            }
-          }
-        );
-
-        mediaRecorder.addEventListener(
-          "stop",
-          async () => {
-            const mimeType =
-              normalizeMimeType(
-                mediaRecorder.mimeType ||
-                preferredMimeType ||
-                audioChunks[0]?.type ||
-                "audio/webm"
-              );
-
-            const audioBlob =
-              new Blob(
-                audioChunks,
-                {
-                  type: mimeType
-                }
-              );
-
-            audioChunks = [];
-            mediaRecorder = null;
-
-            releaseMicrophone();
-
-            await sendVoiceMessage(
-              audioBlob,
-              mimeType
-            );
-          },
-          {
-            once: true
-          }
-        );
-
-        mediaRecorder.addEventListener(
-          "error",
-          (event) => {
-            isRecording = false;
-            stopRecordingTimer();
-            releaseMicrophone();
-            updateControls();
-
-            addErrorMessage(
-              "錄音時發生錯誤，請重新嘗試。",
-              event.error?.message
-            );
-
-            setConnectionState(
-              "error",
-              "錄音失敗"
-            );
-          },
-          {
-            once: true
-          }
-        );
-
-        mediaRecorder.start(250);
-
-        isRecording = true;
-        startRecordingTimer();
-        updateControls();
-
-        setConnectionState(
-          "recording",
-          "正在錄音……再次按下麥克風即可停止並送出"
-        );
-      } catch (error) {
-        releaseMicrophone();
-
-        let message =
-          "無法使用麥克風，請檢查瀏覽器權限。";
-
-        if (error.name === "NotAllowedError") {
-          message =
-            "麥克風權限遭到拒絕。請在瀏覽器網址列的網站權限中允許使用麥克風。";
-        } else if (
-          error.name === "NotFoundError"
-        ) {
-          message =
-            "找不到可使用的麥克風裝置。";
-        } else if (
-          error.name === "NotReadableError"
-        ) {
-          message =
-            "麥克風可能正在被其他程式使用。";
-        } else if (
-          error.name === "SecurityError"
-        ) {
-          message =
-            "瀏覽器基於安全性拒絕麥克風存取。請透過 localhost 或 HTTPS 開啟頁面。";
-        }
-
-        addErrorMessage(
-          message,
-          error.message
-        );
-
-        setConnectionState(
-          "error",
-          "無法使用麥克風"
-        );
-      }
-    }
-
-    function stopRecording() {
-      if (
-        !mediaRecorder ||
-        mediaRecorder.state === "inactive"
-      ) {
-        return;
-      }
-
-      isRecording = false;
-      stopRecordingTimer();
-      updateControls();
-
-      setConnectionState(
-        "",
-        "錄音完成，正在準備上傳……"
-      );
-
-      mediaRecorder.stop();
-    }
-
-    async function toggleRecording() {
-      if (isSending) {
-        return;
-      }
-
-      if (isRecording) {
-        stopRecording();
-        return;
-      }
-
-      await startRecording();
-    }
-
-    function resetConversation() {
-      sessionId = null;
-
-      localStorage.removeItem(
-        "racketChatSessionId"
-      );
-
-      messagesElement.innerHTML = `
-        <div class="message assistant">
-          <div class="bubble">
-            <div class="message-meta">
-              AI 助手
+            <div class="flex items-center gap-5">
+                <a href="#" class="flex items-center gap-2">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center
+                               rounded-full bg-[#3b533e] text-xl text-white"
+                    >
+                        🏸
+                    </span>
+                </a>
+
+                <nav
+                    class="hidden items-center gap-1 text-sm font-bold md:flex"
+                >
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        首頁
+                    </a>
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        打球+1
+                    </a>
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        開團+1
+                    </a>
+                    <a class="rounded-full px-3 py-1.5" href="#">
+                        能力+1
+                    </a>
+                    <a
+                        class="rounded-full bg-[#263728] px-3 py-1.5
+                               text-white"
+                        href="#"
+                    >
+                        裝備+1
+                    </a>
+                </nav>
             </div>
 
-            新的對話已開始。你可以輸入文字，或按麥克風告訴我想找什麼樣的羽球拍！
-          </div>
+            <button
+                class="rounded-full bg-white px-4 py-1.5
+                       text-sm font-bold thick-border"
+            >
+                <i class="fa-solid fa-user mr-2"></i>
+                登入
+            </button>
         </div>
-      `;
+    </header>
 
-      messageInput.value = "";
-      messageInput.style.height = "auto";
+    <main class="mx-auto mt-6 w-full max-w-6xl px-4 md:px-8">
+        <section
+            class="mb-8 rounded-3xl bg-white p-5 shadow-sm
+                   thick-border md:p-7"
+        >
+            <div class="space-y-5">
+                <div
+                    class="flex flex-col gap-3 border-b border-gray-100
+                           pb-4 sm:flex-row sm:items-center"
+                >
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        打法
+                        <span class="text-xs font-normal text-red-500">
+                            必填
+                        </span>
+                    </div>
 
-      setConnectionState(
-        "",
-        "對話已重設"
-      );
+                    <div
+                        id="style-filters"
+                        class="flex flex-wrap gap-2 text-sm font-medium"
+                    >
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="style"
+                            data-value="offensive"
+                        >
+                            進攻型
+                        </button>
 
-      messageInput.focus();
-    }
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="style"
+                            data-value="defensive"
+                        >
+                            防守型
+                        </button>
 
-    chatForm.addEventListener(
-      "submit",
-      async (event) => {
-        event.preventDefault();
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="style"
+                            data-value="all_round"
+                        >
+                            全能型
+                        </button>
+                    </div>
+                </div>
 
-        const message =
-          messageInput.value.trim();
+                <div
+                    class="flex flex-col gap-3 border-b border-gray-100
+                           pb-4 sm:flex-row sm:items-center"
+                >
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        預算
+                        <span class="text-xs font-normal text-red-500">
+                            必填
+                        </span>
+                    </div>
 
-        if (
-          !message ||
-          isSending ||
-          isRecording
-        ) {
-          return;
+                    <div
+                        id="budget-filters"
+                        class="flex flex-wrap gap-2 text-sm font-medium"
+                    >
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="3000"
+                        >
+                            3,000 以下
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="5000"
+                        >
+                            5,000 以下
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="7000"
+                        >
+                            7,000 以下
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="budget"
+                            data-value="1000000"
+                        >
+                            不限
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="flex flex-col gap-3 border-b border-gray-100
+                           pb-4 sm:flex-row sm:items-center"
+                >
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        品牌
+                        <span class="text-xs font-normal text-gray-500">
+                            選填
+                        </span>
+                    </div>
+
+                    <div
+                        id="brand-filters"
+                        class="flex flex-wrap gap-2 text-sm font-medium"
+                    >
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value=""
+                        >
+                            不限
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="YONEX"
+                        >
+                            YONEX
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="VICTOR"
+                        >
+                            VICTOR
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="LI-NING"
+                        >
+                            LI-NING
+                        </button>
+
+                        <button
+                            class="filter-btn rounded-full px-4 py-1.5"
+                            data-type="brand"
+                            data-value="JNICE"
+                        >
+                            JNICE
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 sm:flex-row">
+                    <div class="w-24 shrink-0 text-sm font-bold">
+                        已選條件
+                    </div>
+                    <div
+                        id="selected-tags"
+                        class="flex flex-wrap gap-2 text-xs font-bold"
+                    ></div>
+                </div>
+            </div>
+        </section>
+
+        <div class="mb-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-extrabold">推薦結果</h2>
+                <p
+                    id="result-count-text"
+                    class="text-xs font-medium text-gray-600"
+                >
+                    請選擇打法與預算。
+                </p>
+            </div>
+
+            <button
+                id="clear-all-btn"
+                class="rounded-xl bg-white px-4 py-1.5
+                       text-xs font-bold shadow-sm thick-border"
+            >
+                清除條件
+            </button>
+        </div>
+
+        <div
+            id="equipment-grid"
+            class="grid grid-cols-1 gap-6 md:grid-cols-2"
+        ></div>
+    </main>
+
+    <div
+        class="fixed bottom-5 right-5 z-50 flex flex-col items-end"
+    >
+        <div
+            id="chat-window"
+            class="mb-3 w-[340px] origin-bottom-right overflow-hidden
+                   rounded-2xl bg-white shadow-2xl transition
+                   thick-border sm:w-[380px]"
+        >
+            <div
+                class="flex items-center justify-between border-b-2
+                       border-[#263728] bg-[#e2b342] px-4 py-3"
+            >
+                <div class="flex items-center gap-2">
+                    <span
+                        class="flex h-8 w-8 items-center justify-center
+                               rounded-full border border-[#263728]
+                               bg-white text-lg"
+                    >
+                        🦆
+                    </span>
+                    <span class="text-sm font-extrabold">
+                        鵝助手
+                    </span>
+                </div>
+
+                <div class="flex items-center">
+                    <button
+                        id="new-chat-btn"
+                        class="px-2 text-xs font-bold"
+                        title="重新對話"
+                    >
+                        重新對話
+                    </button>
+                    <button
+                        id="close-chat-btn"
+                        class="px-2 text-base"
+                        title="關閉"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div
+                id="chat-messages"
+                class="chat-scroll min-h-[220px] max-h-[360px]
+                       space-y-3 overflow-y-auto bg-[#fcfdfa] p-4"
+            >
+                <div class="flex items-start">
+                    <div
+                        class="max-w-[88%] rounded-2xl border
+                               border-gray-300 bg-gray-100 p-3
+                               text-xs leading-relaxed shadow-sm"
+                    >
+                        嗨，我是鵝助手。請告訴我你的程度、打法、
+                        預算及偏好的品牌，我會推薦適合的羽球拍。
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 bg-white p-3">
+                <form
+                    id="chat-form"
+                    class="flex items-center gap-2"
+                >
+                    <input
+                        id="chat-input"
+                        type="text"
+                        maxlength="2000"
+                        autocomplete="off"
+                        placeholder="說或打字..."
+                        class="min-w-0 flex-1 rounded-full border
+                               border-gray-300 bg-gray-50 px-3.5
+                               py-1.5 text-xs outline-none"
+                    >
+
+                    <button
+                        id="voice-btn"
+                        type="button"
+                        class="p-1 text-sm text-gray-500"
+                        title="開始錄音"
+                    >
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+
+                    <button
+                        id="send-btn"
+                        type="submit"
+                        class="flex h-7 w-7 items-center justify-center
+                               rounded-full bg-[#263728] text-xs text-white"
+                    >
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <button
+            id="toggle-chat-btn"
+            class="flex h-12 w-12 items-center justify-center
+                   rounded-full border-2 border-[#263728]
+                   bg-[#e2b342] text-xl shadow-lg"
+        >
+            <i class="fa-solid fa-clipboard"></i>
+        </button>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://127.0.0.1:8000";
+        const CHAT_PATH =
+            "/api/v1/recommendations/rackets/chat";
+        const RACKETS_PATH = "/api/v1/rackets";
+        const SESSION_STORAGE_KEY =
+            "badmintonRacketChatSessionId";
+
+        const styleLabels = {
+            offensive: "進攻型",
+            defensive: "防守型",
+            all_round: "全能型"
+        };
+
+        const balanceLabels = {
+            head_heavy: "頭重",
+            even: "平衡",
+            head_light: "頭輕"
+        };
+
+        const flexibilityLabels = {
+            stiff: "硬",
+            medium: "適中",
+            flexible: "軟"
+        };
+
+        let currentFilters = {
+            style: "",
+            budget: "",
+            brand: ""
+        };
+
+        let rackets = [];
+        let isLoadingRackets = false;
+        let isSendingChat = false;
+        let mediaRecorder = null;
+        let recordingStream = null;
+        let audioChunks = [];
+
+        const gridContainer =
+            document.getElementById("equipment-grid");
+        const selectedTagsContainer =
+            document.getElementById("selected-tags");
+        const resultCountText =
+            document.getElementById("result-count-text");
+        const clearAllBtn =
+            document.getElementById("clear-all-btn");
+        const toggleChatBtn =
+            document.getElementById("toggle-chat-btn");
+        const closeChatBtn =
+            document.getElementById("close-chat-btn");
+        const newChatBtn =
+            document.getElementById("new-chat-btn");
+        const chatWindow =
+            document.getElementById("chat-window");
+        const chatForm =
+            document.getElementById("chat-form");
+        const chatInput =
+            document.getElementById("chat-input");
+        const chatMessages =
+            document.getElementById("chat-messages");
+        const voiceBtn =
+            document.getElementById("voice-btn");
+        const sendBtn =
+            document.getElementById("send-btn");
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;")
+                .replaceAll("'", "&#039;");
         }
 
-        messageInput.value = "";
-        messageInput.style.height = "auto";
-
-        await sendTextMessage(message);
-      }
-    );
-
-    voiceButton.addEventListener(
-      "click",
-      toggleRecording
-    );
-
-    messageInput.addEventListener(
-      "keydown",
-      (event) => {
-        if (
-          event.key === "Enter" &&
-          !event.shiftKey &&
-          !event.isComposing
-        ) {
-          event.preventDefault();
-          chatForm.requestSubmit();
-        }
-      }
-    );
-
-    messageInput.addEventListener(
-      "input",
-      () => {
-        messageInput.style.height =
-          "auto";
-
-        messageInput.style.height =
-          `${
-            Math.min(
-              messageInput.scrollHeight,
-              150
-            )
-          }px`;
-      }
-    );
-
-    resetButton.addEventListener(
-      "click",
-      resetConversation
-    );
-
-    window.addEventListener(
-      "beforeunload",
-      () => {
-        if (
-          mediaRecorder &&
-          mediaRecorder.state !== "inactive"
-        ) {
-          mediaRecorder.stop();
+        function getApiError(data, status) {
+            return (
+                data?.error?.message ||
+                data?.detail?.message ||
+                data?.detail ||
+                `API 請求失敗（HTTP ${status}）`
+            );
         }
 
-        releaseMicrophone();
-      }
-    );
+        async function apiFetch(path, options = {}) {
+            const response = await fetch(
+                `${API_BASE_URL}${path}`,
+                options
+            );
 
-    if (
-      !navigator.mediaDevices ||
-      !window.MediaRecorder
-    ) {
-      voiceButton.disabled = true;
-      voiceButton.title =
-        "目前瀏覽器不支援錄音";
+            const data = await response
+                .json()
+                .catch(() => null);
 
-      inputHelp.textContent =
-        "目前瀏覽器不支援錄音，仍可使用文字輸入";
-    }
+            if (!response.ok) {
+                throw new Error(
+                    getApiError(data, response.status)
+                );
+            }
 
-    if (sessionId) {
-      setConnectionState(
-        "",
-        `已載入 Session：${sessionId}`
-      );
-    }
+            return data;
+        }
 
-    updateControls();
-    messageInput.focus();
-  </script>
+        function formatPrice(value) {
+            return Number(value).toLocaleString("zh-TW", {
+                maximumFractionDigits: 0
+            });
+        }
+
+        function setBusy(element, busy) {
+            element.disabled = busy;
+            element.classList.toggle("opacity-50", busy);
+            element.classList.toggle(
+                "cursor-not-allowed",
+                busy
+            );
+        }
+
+        function updateButtonActiveStates() {
+            document
+                .querySelectorAll(".filter-btn")
+                .forEach((button) => {
+                    const type = button.dataset.type;
+                    const value = button.dataset.value;
+                    button.classList.toggle(
+                        "active",
+                        currentFilters[type] === value
+                    );
+                });
+        }
+
+        function createTag(text) {
+            const tag = document.createElement("span");
+            tag.className =
+                "rounded-full bg-[#263728] px-3 py-1 text-white";
+            tag.textContent = text;
+            selectedTagsContainer.appendChild(tag);
+        }
+
+        function renderSelectedTags() {
+            selectedTagsContainer.innerHTML = "";
+
+            if (currentFilters.style) {
+                createTag(
+                    `打法：${styleLabels[currentFilters.style]}`
+                );
+            }
+
+            if (currentFilters.budget) {
+                const budget =
+                    Number(currentFilters.budget) >= 1000000
+                        ? "不限"
+                        : `${formatPrice(
+                            currentFilters.budget
+                        )} 以下`;
+
+                createTag(`預算：${budget}`);
+            }
+
+            if (currentFilters.brand) {
+                createTag(`品牌：${currentFilters.brand}`);
+            }
+
+            if (
+                !currentFilters.style &&
+                !currentFilters.budget &&
+                !currentFilters.brand
+            ) {
+                const empty = document.createElement("span");
+                empty.className = "font-normal text-gray-400";
+                empty.textContent = "尚未選擇";
+                selectedTagsContainer.appendChild(empty);
+            }
+        }
+
+        function emptyResult(icon, title, message) {
+            gridContainer.innerHTML = `
+                <div class="col-span-full rounded-2xl bg-white
+                            py-12 text-center text-gray-500
+                            thick-border">
+                    <i class="fa-solid ${icon}
+                              mb-3 text-4xl text-gray-400"></i>
+                    <p class="font-bold">${escapeHtml(title)}</p>
+                    <p class="mt-1 text-xs text-gray-400">
+                        ${escapeHtml(message)}
+                    </p>
+                </div>
+            `;
+        }
+
+        function renderRackets() {
+            gridContainer.innerHTML = "";
+
+            if (isLoadingRackets) {
+                resultCountText.textContent = "正在查詢球拍資料...";
+                emptyResult(
+                    "fa-spinner fa-spin",
+                    "資料載入中",
+                    "請稍候。"
+                );
+                return;
+            }
+
+            if (!rackets.length) {
+                resultCountText.textContent =
+                    "依目前條件找不到球拍。";
+                emptyResult(
+                    "fa-ghost",
+                    "找不到符合條件的球拍",
+                    "請調整篩選條件後再試一次。"
+                );
+                return;
+            }
+
+            resultCountText.textContent =
+                `依你的條件找到 ${rackets.length} 支球拍。`;
+
+            rackets.forEach((racket) => {
+                const card = document.createElement("article");
+                card.className =
+                    "relative flex flex-col justify-between " +
+                    "rounded-2xl bg-white p-5 shadow-sm " +
+                    "transition hover:shadow-md thick-border";
+
+                const image = racket.image_url
+                    ? `
+                        <img
+                            src="${escapeHtml(racket.image_url)}"
+                            alt="${escapeHtml(
+                                `${racket.brand} ${racket.model}`
+                            )}"
+                            class="h-full w-full object-contain"
+                        >
+                    `
+                    : `
+                        <div class="text-6xl" aria-hidden="true">
+                            🏸
+                        </div>
+                    `;
+
+                const affiliateLink = racket.affiliate_url
+                    ? `
+                        <a
+                            href="${escapeHtml(
+                                racket.affiliate_url
+                            )}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-xs font-bold text-blue-700
+                                   hover:underline"
+                        >
+                            查看商品
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </a>
+                    `
+                    : "";
+
+                card.innerHTML = `
+                    <div>
+                        <div class="mb-4 flex h-36 items-center
+                                    justify-center overflow-hidden
+                                    rounded-xl border-2 border-dashed
+                                    border-[#b2c0b0] bg-[#f7f9f6]">
+                            ${image}
+                        </div>
+
+                        <h3 class="text-base font-extrabold">
+                            ${escapeHtml(racket.brand)}
+                            ${escapeHtml(racket.model)}
+                        </h3>
+
+                        <p class="mt-1 text-xs font-medium text-gray-500">
+                            ${escapeHtml(
+                                styleLabels[racket.playing_style] ||
+                                racket.playing_style ||
+                                "未分類"
+                            )}
+                            ·
+                            ${escapeHtml(
+                                racket.suitable_level || "程度不限"
+                            )}
+                        </p>
+
+                        <p class="my-3 text-xs leading-relaxed
+                                  text-gray-600">
+                            ${escapeHtml(
+                                racket.description || "暫無產品說明。"
+                            )}
+                        </p>
+
+                        <div class="mb-4 text-[11px] font-medium
+                                    text-gray-400">
+                            重量 ${escapeHtml(racket.weight || "未提供")}
+                            <span class="mx-1">|</span>
+                            平衡
+                            ${escapeHtml(
+                                balanceLabels[racket.balance] ||
+                                racket.balance ||
+                                "未提供"
+                            )}
+                            <span class="mx-1">|</span>
+                            軟硬
+                            ${escapeHtml(
+                                flexibilityLabels[
+                                    racket.flexibility
+                                ] ||
+                                racket.flexibility ||
+                                "未提供"
+                            )}
+                        </div>
+                    </div>
+
+                    <div class="flex items-end justify-between
+                                border-t border-gray-100 pt-3">
+                        <div>
+                            <span class="block text-[10px] text-gray-400">
+                                參考價格
+                            </span>
+                            <span class="text-base font-extrabold">
+                                NT$ ${formatPrice(racket.price)}
+                            </span>
+                        </div>
+                        ${affiliateLink}
+                    </div>
+                `;
+
+                gridContainer.appendChild(card);
+            });
+        }
+
+        async function queryRackets() {
+            renderSelectedTags();
+            updateButtonActiveStates();
+
+            if (
+                !currentFilters.style ||
+                !currentFilters.budget
+            ) {
+                rackets = [];
+                resultCountText.textContent =
+                    "請選擇打法與預算。";
+                emptyResult(
+                    "fa-filter",
+                    "請先選擇查詢條件",
+                    "打法與預算為必填條件。"
+                );
+                return;
+            }
+
+            const params = new URLSearchParams({
+                budget: currentFilters.budget,
+                playing_style: currentFilters.style,
+                page: "1",
+                pageSize: "100"
+            });
+
+            if (currentFilters.brand) {
+                params.set("brand", currentFilters.brand);
+            }
+
+            isLoadingRackets = true;
+            renderRackets();
+
+            try {
+                const response = await apiFetch(
+                    `${RACKETS_PATH}?${params.toString()}`,
+                    {
+                        headers: {
+                            Accept: "application/json"
+                        }
+                    }
+                );
+
+                rackets = response.data;
+            } catch (error) {
+                rackets = [];
+                addAssistantMessage(
+                    `球拍查詢失敗：${error.message}`
+                );
+            } finally {
+                isLoadingRackets = false;
+                renderRackets();
+            }
+        }
+
+        async function selectRecommendedRacket(racketId) {
+            try {
+                resultCountText.textContent =
+                    "正在取得推薦球拍資料...";
+
+                const racket = await apiFetch(
+                    `${RACKETS_PATH}/${encodeURIComponent(
+                        racketId
+                    )}`,
+                    {
+                        headers: {
+                            Accept: "application/json"
+                        }
+                    }
+                );
+
+                currentFilters = {
+                    style: racket.playing_style,
+                    budget: String(
+                        Math.max(
+                            1,
+                            Math.ceil(Number(racket.price))
+                        )
+                    ),
+                    brand: racket.brand
+                };
+
+                rackets = [racket];
+                updateButtonActiveStates();
+                renderSelectedTags();
+                renderRackets();
+
+                document
+                    .getElementById("equipment-grid")
+                    .scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+            } catch (error) {
+                addAssistantMessage(
+                    `無法取得推薦球拍：${error.message}`
+                );
+            }
+        }
+
+        function addUserMessage(message) {
+            const row = document.createElement("div");
+            row.className = "flex items-start justify-end";
+
+            const bubble = document.createElement("div");
+            bubble.className =
+                "max-w-[85%] whitespace-pre-wrap rounded-2xl " +
+                "bg-[#263728] p-3 text-xs leading-relaxed " +
+                "text-white shadow-sm";
+            bubble.textContent = message;
+
+            row.appendChild(bubble);
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+        }
+
+        function addAssistantMessage(
+            message,
+            recommendation = null
+        ) {
+            const row = document.createElement("div");
+            row.className = "flex items-start";
+
+            const bubble = document.createElement("div");
+            bubble.className =
+                "max-w-[88%] rounded-2xl border " +
+                "border-gray-300 bg-gray-100 p-3 " +
+                "text-xs leading-relaxed shadow-sm";
+
+            if (recommendation) {
+                const link = document.createElement("a");
+                link.href = "#equipment-grid";
+                link.className =
+                    "mb-1 block font-extrabold text-blue-700 " +
+                    "underline underline-offset-2";
+                link.textContent =
+                    `${recommendation.brand} ` +
+                    `${recommendation.model}`;
+                link.title =
+                    "查詢這支球拍並更新頁面篩選條件";
+
+                link.addEventListener("click", async (event) => {
+                    event.preventDefault();
+                    await selectRecommendedRacket(
+                        recommendation.id
+                    );
+                });
+
+                bubble.appendChild(link);
+            }
+
+            const content = document.createElement("div");
+            content.className = "whitespace-pre-wrap";
+            content.textContent = message;
+            bubble.appendChild(content);
+
+            row.appendChild(bubble);
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop =
+                chatMessages.scrollHeight;
+        }
+
+        function saveSessionId(sessionId) {
+            if (sessionId) {
+                sessionStorage.setItem(
+                    SESSION_STORAGE_KEY,
+                    sessionId
+                );
+            }
+        }
+
+        function getSessionId() {
+            return sessionStorage.getItem(
+                SESSION_STORAGE_KEY
+            );
+        }
+
+        function clearSession() {
+            sessionStorage.removeItem(
+                SESSION_STORAGE_KEY
+            );
+        }
+
+        async function processChatResponse(response) {
+            saveSessionId(response.session_id);
+
+            if (response.transcript) {
+                addUserMessage(response.transcript);
+            }
+
+            addAssistantMessage(
+                response.message,
+                response.status === "recommended"
+                    ? response.recommendation
+                    : null
+            );
+        }
+
+        async function sendTextMessage(message) {
+            if (isSendingChat) {
+                return;
+            }
+
+            isSendingChat = true;
+            setBusy(sendBtn, true);
+            setBusy(voiceBtn, true);
+
+            try {
+                const sessionId = getSessionId();
+
+                const response = await apiFetch(CHAT_PATH, {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message,
+                        ...(sessionId
+                            ? { session_id: sessionId }
+                            : {})
+                    })
+                });
+
+                await processChatResponse(response);
+            } catch (error) {
+                addAssistantMessage(
+                    `對話失敗：${error.message}`
+                );
+            } finally {
+                isSendingChat = false;
+                setBusy(sendBtn, false);
+                setBusy(voiceBtn, false);
+                chatInput.focus();
+            }
+        }
+
+        function getSupportedMimeType() {
+            const candidates = [
+                "audio/webm;codecs=opus",
+                "audio/webm",
+                "audio/ogg;codecs=opus",
+                "audio/mp4"
+            ];
+
+            return candidates.find(
+                (type) =>
+                    typeof MediaRecorder !== "undefined" &&
+                    MediaRecorder.isTypeSupported(type)
+            ) || "";
+        }
+
+        async function startRecording() {
+            if (
+                !navigator.mediaDevices?.getUserMedia ||
+                typeof MediaRecorder === "undefined"
+            ) {
+                throw new Error(
+                    "目前瀏覽器不支援錄音功能。"
+                );
+            }
+
+            recordingStream =
+                await navigator.mediaDevices.getUserMedia({
+                    audio: true
+                });
+
+            const mimeType = getSupportedMimeType();
+            const options = mimeType ? { mimeType } : undefined;
+
+            mediaRecorder = new MediaRecorder(
+                recordingStream,
+                options
+            );
+            audioChunks = [];
+
+            mediaRecorder.addEventListener(
+                "dataavailable",
+                (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                }
+            );
+
+            mediaRecorder.addEventListener(
+                "stop",
+                uploadRecording
+            );
+
+            mediaRecorder.start();
+            voiceBtn.classList.add("recording");
+            voiceBtn.title = "停止錄音";
+        }
+
+        function stopRecording() {
+            if (
+                mediaRecorder &&
+                mediaRecorder.state === "recording"
+            ) {
+                mediaRecorder.stop();
+            }
+
+            voiceBtn.classList.remove("recording");
+            voiceBtn.title = "開始錄音";
+        }
+
+        async function uploadRecording() {
+            const mimeType =
+                mediaRecorder?.mimeType || "audio/webm";
+            const normalizedType =
+                mimeType.split(";")[0] || "audio/webm";
+            const extension =
+                normalizedType.includes("ogg")
+                    ? "ogg"
+                    : normalizedType.includes("mp4")
+                        ? "m4a"
+                        : "webm";
+
+            const audioBlob = new Blob(audioChunks, {
+                type: normalizedType
+            });
+
+            recordingStream
+                ?.getTracks()
+                .forEach((track) => track.stop());
+
+            recordingStream = null;
+            mediaRecorder = null;
+            audioChunks = [];
+
+            if (!audioBlob.size) {
+                addAssistantMessage("沒有錄到任何聲音。");
+                return;
+            }
+
+            isSendingChat = true;
+            setBusy(sendBtn, true);
+            setBusy(voiceBtn, true);
+            addAssistantMessage("正在辨識語音，請稍候...");
+
+            try {
+                const formData = new FormData();
+                formData.append(
+                    "audio",
+                    audioBlob,
+                    `recording.${extension}`
+                );
+
+                const sessionId = getSessionId();
+
+                if (sessionId) {
+                    formData.append(
+                        "session_id",
+                        sessionId
+                    );
+                }
+
+                const response = await apiFetch(
+                    `${CHAT_PATH}/voice`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Accept: "application/json"
+                        },
+                        body: formData
+                    }
+                );
+
+                await processChatResponse(response);
+            } catch (error) {
+                addAssistantMessage(
+                    `語音對話失敗：${error.message}`
+                );
+            } finally {
+                isSendingChat = false;
+                setBusy(sendBtn, false);
+                setBusy(voiceBtn, false);
+            }
+        }
+
+        document
+            .querySelectorAll(".filter-btn")
+            .forEach((button) => {
+                button.addEventListener("click", async () => {
+                    currentFilters[
+                        button.dataset.type
+                    ] = button.dataset.value;
+
+                    await queryRackets();
+                });
+            });
+
+        clearAllBtn.addEventListener("click", () => {
+            currentFilters = {
+                style: "",
+                budget: "",
+                brand: ""
+            };
+            rackets = [];
+            updateButtonActiveStates();
+            renderSelectedTags();
+            resultCountText.textContent =
+                "請選擇打法與預算。";
+            emptyResult(
+                "fa-filter",
+                "請先選擇查詢條件",
+                "打法與預算為必填條件。"
+            );
+        });
+
+        chatForm.addEventListener(
+            "submit",
+            async (event) => {
+                event.preventDefault();
+
+                const message = chatInput.value.trim();
+
+                if (!message || isSendingChat) {
+                    return;
+                }
+
+                addUserMessage(message);
+                chatInput.value = "";
+                await sendTextMessage(message);
+            }
+        );
+
+        voiceBtn.addEventListener("click", async () => {
+            if (isSendingChat) {
+                return;
+            }
+
+            if (
+                mediaRecorder &&
+                mediaRecorder.state === "recording"
+            ) {
+                stopRecording();
+                return;
+            }
+
+            try {
+                await startRecording();
+            } catch (error) {
+                addAssistantMessage(
+                    `無法開始錄音：${error.message}`
+                );
+            }
+        });
+
+        newChatBtn.addEventListener("click", () => {
+            stopRecording();
+            clearSession();
+            chatMessages.innerHTML = "";
+            addAssistantMessage(
+                "已開始新的對話。請告訴我你的程度、" +
+                "打法、預算及偏好的品牌。"
+            );
+            chatInput.focus();
+        });
+
+        toggleChatBtn.addEventListener("click", () => {
+            chatWindow.classList.toggle("hidden");
+        });
+
+        closeChatBtn.addEventListener("click", () => {
+            chatWindow.classList.add("hidden");
+        });
+
+        window.addEventListener("beforeunload", () => {
+            recordingStream
+                ?.getTracks()
+                .forEach((track) => track.stop());
+        });
+
+        updateButtonActiveStates();
+        renderSelectedTags();
+        emptyResult(
+            "fa-filter",
+            "請先選擇查詢條件",
+            "打法與預算為必填條件。"
+        );
+    </script>
 </body>
 </html>
